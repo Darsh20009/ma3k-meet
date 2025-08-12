@@ -76,43 +76,36 @@ function PersonalChatContent() {
     
     socket.onopen = () => {
       console.log('Connected to WebSocket');
+      // Use meeting-style join message
       socket.send(JSON.stringify({
-        type: 'join',
-        chatId: chatId,
-        user: {
-          id: profile.id,
-          name: profile.name,
-          avatar: profile.avatar,
-          isOnline: true,
-          lastSeen: new Date()
-        }
+        type: 'user_joined',
+        meetingId: chatId,
+        userName: profile.name,
+        userAvatar: profile.avatar,
+        isHost: false
       }));
     };
     
     socket.onmessage = (event) => {
       const data = JSON.parse(event.data);
       
-      switch (data.type) {
-        case 'message':
-          setMessages(prev => [...prev, data.message]);
-          break;
-        case 'user_joined':
+      if (data.type === 'message') {
+        const newMessage = {
+          id: Date.now(),
+          text: data.message,
+          sender: data.senderName || 'مستخدم',
+          timestamp: new Date(),
+          isUser: data.isFromRealUser && data.senderName === profile.name
+        };
+        setMessages(prev => [...prev, newMessage]);
+      } else if (data.type === 'user_joined' && data.user) {
+        if (data.user.name !== profile.name) {
           setConnectedUsers(prev => new Set([...Array.from(prev), data.user.id]));
           toast({
             title: "مستخدم جديد انضم",
             description: `${data.user.name} انضم للشات`,
           });
-          break;
-        case 'user_left':
-          setConnectedUsers(prev => {
-            const newSet = new Set(Array.from(prev));
-            newSet.delete(data.userId);
-            return newSet;
-          });
-          break;
-        case 'typing':
-          setIsTyping(data.isTyping);
-          break;
+        }
       }
     };
     
@@ -182,12 +175,14 @@ function PersonalChatContent() {
       reactions: []
     };
 
-    // Send via WebSocket to other users
+    // Send via WebSocket using meeting format
     if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
       wsRef.current.send(JSON.stringify({
-        type: 'message',
-        chatId: chatId,
-        message: message
+        type: 'send_message',
+        meetingId: chatId,
+        senderName: userProfile.name,
+        senderAvatar: userProfile.avatar,
+        message: newMessage
       }));
     }
 

@@ -84,7 +84,7 @@ export default function Welcome() {
             onClick={() => setLocation('/join')}
             variant="outline"
             size="lg"
-            className="border-2 border-white/30 text-white hover:bg-white/10 px-8 py-4 rounded-full backdrop-blur-sm transition-all duration-300"
+            className="border-2 border-white/30 text-white hover:bg-white/10 px-8 py-4 rounded-full backdrop-blur-sm transition-all duration-300 bg-[#583181]"
           >
             <i className="fas fa-sign-in-alt mr-3"></i>
             انضم لاجتماع
