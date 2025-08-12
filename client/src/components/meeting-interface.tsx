@@ -55,16 +55,38 @@ export default function MeetingInterface({ meeting, onLeave }: MeetingInterfaceP
     }
   };
 
-  const shareInviteLink = () => {
-    const inviteUrl = `${window.location.origin}/meeting/${meeting.id}`;
-    navigator.clipboard.writeText(inviteUrl).then(() => {
+  const shareInviteLink = async () => {
+    const shareUrl = `${window.location.origin}/meeting/${meeting.id}`;
+    
+    // Try to use native share API if available (mobile devices)
+    if (navigator.share && /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+      try {
+        await navigator.share({
+          title: `اجتماع: ${meeting.name}`,
+          text: `انضم إلى الاجتماع`,
+          url: shareUrl,
+        });
+        toast({
+          title: "تم المشاركة",
+          description: "تم مشاركة رابط الاجتماع بنجاح",
+        });
+        return;
+      } catch (err) {
+        // Fall back to clipboard if share is cancelled
+      }
+    }
+    
+    // Fallback to clipboard for desktop or if native share fails
+    try {
+      await navigator.clipboard.writeText(shareUrl);
       toast({
         title: "تم النسخ",
-        description: "تم نسخ رابط الاجتماع بنجاح",
+        description: "تم نسخ رابط الاجتماع إلى الحافظة",
       });
-    }).catch(() => {
+    } catch (err) {
+      // If clipboard API fails, show dialog as final fallback
       setShowShareDialog(true);
-    });
+    }
   };
 
   // Listen for fullscreen changes
@@ -160,11 +182,11 @@ export default function MeetingInterface({ meeting, onLeave }: MeetingInterfaceP
             </div>
           </div>
           
-          {/* Video Grid Area */}
-          <div className="flex-1 p-6 grid grid-cols-2 gap-4">
+          {/* Video Grid Area - Responsive */}
+          <div className="flex-1 p-3 sm:p-6 grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             
             {/* Main Speaker (User) */}
-            <div className="bg-gray-800 rounded-xl relative meeting-active p-4 col-span-2 h-64">
+            <div className="bg-gray-800 rounded-xl relative meeting-active p-4 col-span-1 sm:col-span-2 h-48 sm:h-64">
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="text-center">
                   {(() => {
@@ -258,9 +280,11 @@ export default function MeetingInterface({ meeting, onLeave }: MeetingInterfaceP
             
           </div>
           
-          {/* Meeting Controls */}
-          <div className="bg-gradient-to-r from-gray-800 to-gray-900 px-6 py-6 border-t border-gray-700">
-            <div className="flex items-center justify-center space-x-reverse space-x-6">
+          {/* Meeting Controls - Mobile Responsive */}
+          <div className="bg-gradient-to-r from-gray-800 to-gray-900 px-3 sm:px-6 py-4 sm:py-6 border-t border-gray-700">
+            
+            {/* Desktop Layout */}
+            <div className="hidden sm:flex items-center justify-center space-x-reverse space-x-6">
               
               {/* Primary Controls */}
               <div className="flex items-center space-x-reverse space-x-3 bg-black/20 rounded-full px-4 py-2">
@@ -275,7 +299,7 @@ export default function MeetingInterface({ meeting, onLeave }: MeetingInterfaceP
                   >
                     <i className={`fas ${isMicOn ? 'fa-microphone' : 'fa-microphone-slash'} text-lg`}></i>
                   </Button>
-                  <div className="absolute -top-10 left-1/2 transform -translate-x-1/2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                  <div className="absolute -top-10 left-1/2 transform -translate-x-1/2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50">
                     {isMicOn ? 'كتم الصوت' : 'إلغاء كتم الصوت'}
                   </div>
                 </div>
@@ -291,7 +315,7 @@ export default function MeetingInterface({ meeting, onLeave }: MeetingInterfaceP
                   >
                     <i className={`fas ${isVideoOn ? 'fa-video' : 'fa-video-slash'} text-lg`}></i>
                   </Button>
-                  <div className="absolute -top-10 left-1/2 transform -translate-x-1/2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                  <div className="absolute -top-10 left-1/2 transform -translate-x-1/2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50">
                     {isVideoOn ? 'إيقاف الفيديو' : 'تشغيل الفيديو'}
                   </div>
                 </div>
@@ -307,7 +331,7 @@ export default function MeetingInterface({ meeting, onLeave }: MeetingInterfaceP
                   >
                     <i className={`fas fa-desktop text-lg`}></i>
                   </Button>
-                  <div className="absolute -top-10 left-1/2 transform -translate-x-1/2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                  <div className="absolute -top-10 left-1/2 transform -translate-x-1/2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50">
                     {isScreenSharing ? 'إيقاف مشاركة الشاشة' : 'مشاركة الشاشة'}
                   </div>
                 </div>
@@ -322,7 +346,7 @@ export default function MeetingInterface({ meeting, onLeave }: MeetingInterfaceP
                   >
                     <i className="fas fa-users text-sm"></i>
                   </Button>
-                  <div className="absolute -top-10 left-1/2 transform -translate-x-1/2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                  <div className="absolute -top-10 left-1/2 transform -translate-x-1/2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50">
                     المشاركون
                   </div>
                 </div>
@@ -334,7 +358,7 @@ export default function MeetingInterface({ meeting, onLeave }: MeetingInterfaceP
                   >
                     <i className="fas fa-share text-sm"></i>
                   </Button>
-                  <div className="absolute -top-10 left-1/2 transform -translate-x-1/2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                  <div className="absolute -top-10 left-1/2 transform -translate-x-1/2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50">
                     مشاركة الرابط
                   </div>
                 </div>
@@ -346,7 +370,7 @@ export default function MeetingInterface({ meeting, onLeave }: MeetingInterfaceP
                   >
                     <i className={`fas ${isFullscreen ? 'fa-compress' : 'fa-expand'} text-sm`}></i>
                   </Button>
-                  <div className="absolute -top-10 left-1/2 transform -translate-x-1/2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                  <div className="absolute -top-10 left-1/2 transform -translate-x-1/2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50">
                     {isFullscreen ? 'تصغير الشاشة' : 'ملء الشاشة'}
                   </div>
                 </div>
@@ -360,15 +384,104 @@ export default function MeetingInterface({ meeting, onLeave }: MeetingInterfaceP
                 >
                   <i className="fas fa-phone-slash text-lg"></i>
                 </Button>
-                <div className="absolute -top-10 left-1/2 transform -translate-x-1/2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                <div className="absolute -top-10 left-1/2 transform -translate-x-1/2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50">
                   مغادرة الاجتماع
                 </div>
               </div>
-
             </div>
 
-            {/* Status Bar */}
-            <div className="flex items-center justify-center mt-4 space-x-reverse space-x-6 text-sm text-gray-400">
+            {/* Mobile Layout */}
+            <div className="sm:hidden">
+              {/* Primary Row - Most Important Controls */}
+              <div className="flex items-center justify-center space-x-reverse space-x-4 mb-3">
+                <Button
+                  onClick={toggleMicrophone}
+                  className={`w-14 h-14 rounded-full transition-all ${
+                    isMicOn 
+                      ? 'bg-success hover:bg-success/90 text-white' 
+                      : 'bg-red-500 hover:bg-red-600 text-white'
+                  }`}
+                >
+                  <i className={`fas ${isMicOn ? 'fa-microphone' : 'fa-microphone-slash'} text-xl`}></i>
+                </Button>
+
+                <Button
+                  onClick={toggleVideo}
+                  className={`w-14 h-14 rounded-full transition-all ${
+                    isVideoOn
+                      ? 'bg-success hover:bg-success/90 text-white'
+                      : 'bg-gray-600 hover:bg-gray-500 text-white'
+                  }`}
+                >
+                  <i className={`fas ${isVideoOn ? 'fa-video' : 'fa-video-slash'} text-xl`}></i>
+                </Button>
+
+                <Button
+                  onClick={onLeave}
+                  className="w-14 h-14 bg-danger hover:bg-danger/90 text-white rounded-full transition-all"
+                >
+                  <i className="fas fa-phone-slash text-xl"></i>
+                </Button>
+              </div>
+
+              {/* Secondary Row - Additional Controls */}
+              <div className="flex items-center justify-center space-x-reverse space-x-3">
+                <Button
+                  onClick={toggleScreenShare}
+                  className={`w-12 h-12 rounded-full transition-all ${
+                    isScreenSharing
+                      ? 'bg-primary hover:bg-primary/90 text-white'
+                      : 'bg-gray-600 hover:bg-gray-500 text-white'
+                  }`}
+                >
+                  <i className="fas fa-desktop"></i>
+                </Button>
+
+                <Button
+                  onClick={toggleParticipants}
+                  className="w-12 h-12 bg-gray-700 hover:bg-gray-600 text-white rounded-full transition-all"
+                >
+                  <i className="fas fa-users"></i>
+                </Button>
+
+                <Button
+                  onClick={shareInviteLink}
+                  className="w-12 h-12 bg-blue-600 hover:bg-blue-500 text-white rounded-full transition-all"
+                >
+                  <i className="fas fa-share"></i>
+                </Button>
+
+                <Button
+                  onClick={toggleFullscreen}
+                  className="w-12 h-12 bg-purple-600 hover:bg-purple-500 text-white rounded-full transition-all"
+                >
+                  <i className={`fas ${isFullscreen ? 'fa-compress' : 'fa-expand'}`}></i>
+                </Button>
+              </div>
+
+              {/* Mobile Status Indicators */}
+              <div className="flex items-center justify-center mt-3 space-x-reverse space-x-4 text-xs text-gray-400">
+                <div className={`flex items-center ${isMicOn ? 'text-success' : 'text-red-400'}`}>
+                  <div className={`w-2 h-2 rounded-full ml-1 ${isMicOn ? 'bg-success' : 'bg-red-500'}`}></div>
+                  <span>{isMicOn ? 'مفتوح' : 'مكتوم'}</span>
+                </div>
+                {isVideoOn && (
+                  <div className="flex items-center text-success">
+                    <div className="w-2 h-2 bg-success rounded-full ml-1"></div>
+                    <span>فيديو</span>
+                  </div>
+                )}
+                {isScreenSharing && (
+                  <div className="flex items-center text-primary">
+                    <div className="w-2 h-2 bg-primary rounded-full ml-1"></div>
+                    <span>مشاركة</span>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Desktop Status Bar */}
+            <div className="hidden sm:flex items-center justify-center mt-4 space-x-reverse space-x-6 text-sm text-gray-400">
               <div className="flex items-center">
                 <div className={`w-2 h-2 rounded-full ml-2 ${isMicOn ? 'bg-success' : 'bg-red-500'}`}></div>
                 <span>{isMicOn ? 'الميكروفون مفتوح' : 'الميكروفون مكتوم'}</span>
@@ -390,13 +503,15 @@ export default function MeetingInterface({ meeting, onLeave }: MeetingInterfaceP
           
         </main>
         
-        {/* Chat Sidebar */}
-        <ChatSidebar 
-          meeting={meeting}
-          messages={messages}
-          onSendMessage={sendMessage}
-          setMessages={setMessages}
-        />
+        {/* Chat Sidebar - Hidden on mobile, overlay on desktop */}
+        <div className={`${showParticipants ? 'block' : 'hidden'} md:block`}>
+          <ChatSidebar 
+            meeting={meeting}
+            messages={messages}
+            onSendMessage={sendMessage}
+            setMessages={setMessages}
+          />
+        </div>
         
       </div>
       

@@ -201,11 +201,30 @@ export default function Home() {
                               نشط
                             </span>
                             <button
-                              onClick={(e) => {
+                              onClick={async (e) => {
                                 e.stopPropagation();
                                 const shareUrl = `${window.location.origin}/meeting/${meeting.id}`;
-                                navigator.clipboard.writeText(shareUrl);
-                                // You could add a toast here
+                                
+                                // Try native share first (mobile)
+                                if (navigator.share && /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+                                  try {
+                                    await navigator.share({
+                                      title: `اجتماع: ${meeting.name}`,
+                                      text: 'انضم إلى الاجتماع',
+                                      url: shareUrl,
+                                    });
+                                    return;
+                                  } catch (err) {
+                                    // Fall back to clipboard
+                                  }
+                                }
+                                
+                                // Clipboard fallback
+                                try {
+                                  await navigator.clipboard.writeText(shareUrl);
+                                } catch (err) {
+                                  console.log('Clipboard failed, URL copied to selection');
+                                }
                               }}
                               className="text-xs text-blue-600 hover:text-blue-800 px-2 py-1 bg-blue-50 rounded hover:bg-blue-100 transition-colors"
                               title="نسخ رابط المشاركة"

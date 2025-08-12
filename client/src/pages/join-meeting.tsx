@@ -91,7 +91,7 @@ export default function JoinMeeting() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50" dir="rtl">
+    <div className="min-h-screen bg-gray-50 px-4 sm:px-0" dir="rtl">
       {/* Header */}
       <header className="bg-white border-b border-gray-200 px-6 py-4">
         <div className="flex items-center justify-between max-w-4xl mx-auto">
