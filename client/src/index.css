@@ -39,9 +39,9 @@
   --sidebar-accent-foreground: hsl(213.3333 88.2845% 53.1373%);
   --sidebar-border: hsl(205.0000 25.0000% 90.5882%);
   --sidebar-ring: hsl(213.3333 88.2845% 53.1373%);
-  --font-sans: 'Tajawal', 'Inter', sans-serif;
-  --font-serif: Georgia, serif;
-  --font-mono: Menlo, monospace;
+  --font-sans: 'Cairo', 'Tajawal', sans-serif;
+  --font-serif: 'Cairo', serif;
+  --font-mono: 'JetBrains Mono', monospace;
   --radius: 0.75rem;
   --shadow-2xs: 0px 2px 0px 0px hsl(213.3333 88.2845% 53.1373% / 0.00);
   --shadow-xs: 0px 2px 0px 0px hsl(213.3333 88.2845% 53.1373% / 0.00);
@@ -91,9 +91,9 @@
   --sidebar-accent-foreground: hsl(213.3333 88.2845% 53.1373%);
   --sidebar-border: hsl(205.7143 15.7895% 26.0784%);
   --sidebar-ring: hsl(213.3333 88.2845% 53.1373%);
-  --font-sans: 'Tajawal', 'Inter', sans-serif;
-  --font-serif: Georgia, serif;
-  --font-mono: Menlo, monospace;
+  --font-sans: 'Cairo', 'Tajawal', sans-serif;
+  --font-serif: 'Cairo', serif;
+  --font-mono: 'JetBrains Mono', monospace;
   --radius: 0.75rem;
   --shadow-2xs: 0px 2px 0px 0px hsl(213.3333 88.2845% 53.1373% / 0.00);
   --shadow-xs: 0px 2px 0px 0px hsl(213.3333 88.2845% 53.1373% / 0.00);
@@ -112,7 +112,7 @@
 
   body {
     @apply font-sans antialiased bg-background text-foreground;
-    font-family: 'Tajawal', 'Inter', sans-serif;
+    font-family: 'Cairo', 'Tajawal', sans-serif;
   }
   
   /* Arabic RTL support */
@@ -120,17 +120,177 @@
     direction: rtl;
   }
   
+  /* Creative Mobile-First Animations */
+  @keyframes slideIn {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  @keyframes pulse {
+    0%, 100% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.05);
+    }
+  }
+  
+  @keyframes floating {
+    0%, 100% {
+      transform: translateY(0px);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+  
+  @keyframes glow {
+    0%, 100% {
+      box-shadow: 0 0 5px rgba(59, 130, 246, 0.5);
+    }
+    50% {
+      box-shadow: 0 0 20px rgba(59, 130, 246, 0.8), 0 0 30px rgba(59, 130, 246, 0.4);
+    }
+  }
+  
   /* Meeting interface specific styles */
   .meeting-active {
-    box-shadow: 0 0 20px rgba(37, 99, 235, 0.3);
+    animation: glow 2s ease-in-out infinite;
+    background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
   }
   
   .chat-message {
-    animation: slideIn 0.3s ease-out;
+    animation: slideIn 0.4s ease-out;
+    transition: all 0.3s ease;
+  }
+  
+  .chat-message:hover {
+    transform: translateX(-5px);
+    background: rgba(59, 130, 246, 0.1);
   }
   
   .participant-avatar {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    animation: floating 3s ease-in-out infinite;
+    transition: all 0.3s ease;
+  }
+  
+  .participant-avatar:hover {
+    animation: pulse 0.6s ease-in-out;
+  }
+  
+  /* Creative Control Buttons */
+  .control-button {
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .control-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+  }
+  
+  .control-button:hover::before {
+    left: 100%;
+  }
+  
+  .control-button:active {
+    transform: scale(0.95);
+  }
+  
+  /* Mobile-Optimized Touch Targets */
+  @media (max-width: 768px) {
+    .control-button {
+      min-width: 48px;
+      min-height: 48px;
+      touch-action: manipulation;
+    }
+    
+    .chat-message {
+      font-size: 16px;
+      line-height: 1.6;
+      padding: 12px 16px;
+    }
+    
+    /* Mobile scroll optimization */
+    .chat-container {
+      -webkit-overflow-scrolling: touch;
+      scroll-behavior: smooth;
+    }
+    
+    /* Mobile keyboard support */
+    .chat-input {
+      font-size: 16px; /* Prevents zoom on iOS */
+    }
+  }
+  
+  /* Enhanced Visual Effects */
+  .glass-effect {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+  
+  .neon-border {
+    border: 2px solid transparent;
+    background: linear-gradient(45deg, #00f5ff, #ff00e6) border-box;
+    border-radius: 50px;
+  }
+  
+  /* Realistic Meeting Grid */
+  .video-grid {
+    display: grid;
+    gap: 8px;
+    padding: 16px;
+  }
+  
+  @media (max-width: 640px) {
+    .video-grid {
+      grid-template-columns: 1fr;
+      gap: 6px;
+      padding: 12px;
+    }
+  }
+  
+  @media (min-width: 641px) and (max-width: 1024px) {
+    .video-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  
+  @media (min-width: 1025px) {
+    .video-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+  
+  /* Status Indicators */
+  .status-online {
+    animation: pulse 2s infinite;
+    background: linear-gradient(45deg, #10b981, #34d399);
+  }
+  
+  .status-away {
+    animation: pulse 2s infinite;
+    background: linear-gradient(45deg, #f59e0b, #fbbf24);
+  }
+  
+  .status-busy {
+    animation: pulse 2s infinite;
+    background: linear-gradient(45deg, #ef4444, #f87171);
   }
 
   /* Fullscreen styles */

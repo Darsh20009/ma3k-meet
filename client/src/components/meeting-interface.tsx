@@ -183,10 +183,10 @@ export default function MeetingInterface({ meeting, onLeave }: MeetingInterfaceP
           </div>
           
           {/* Video Grid Area - Responsive */}
-          <div className="flex-1 p-3 sm:p-6 grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+          <div className="flex-1 p-2 sm:p-6 video-grid meeting-active">
             
             {/* Main Speaker (User) */}
-            <div className="bg-gray-800 rounded-xl relative meeting-active p-4 col-span-1 sm:col-span-2 h-48 sm:h-64">
+            <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl relative glass-effect p-4 col-span-full h-40 sm:h-56 lg:h-64 mb-3 sm:mb-4">
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="text-center">
                   {(() => {
@@ -194,11 +194,11 @@ export default function MeetingInterface({ meeting, onLeave }: MeetingInterfaceP
                     const userAvatar = userName.slice(0, 2);
                     return (
                       <>
-                        <div className="w-24 h-24 bg-gradient-to-br from-primary to-blue-600 rounded-full mx-auto flex items-center justify-center text-white text-2xl font-bold mb-4">
+                        <div className="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 bg-gradient-to-br from-primary to-blue-600 rounded-full mx-auto flex items-center justify-center text-white text-lg sm:text-xl lg:text-2xl font-bold mb-3 participant-avatar">
                           {userAvatar}
                         </div>
-                        <h3 className="text-white font-semibold text-lg">{userName} (أنت)</h3>
-                        <p className="text-gray-300 text-sm">
+                        <h3 className="text-white font-semibold text-sm sm:text-base lg:text-lg">{userName} (أنت)</h3>
+                        <p className="text-gray-300 text-xs sm:text-sm">
                           {isMicOn ? 'يتحدث الآن' : 'صامت'}
                         </p>
                       </>
@@ -206,21 +206,21 @@ export default function MeetingInterface({ meeting, onLeave }: MeetingInterfaceP
                   })()}
                 </div>
               </div>
-              <div className="absolute bottom-4 left-4 flex space-x-reverse space-x-2">
-                <div className={`p-2 rounded-full ${isMicOn ? 'bg-success text-white' : 'bg-gray-600 text-white'}`}>
-                  <i className={`fas ${isMicOn ? 'fa-microphone' : 'fa-microphone-slash'} text-sm`}></i>
+              <div className="absolute bottom-3 left-3 flex space-x-reverse space-x-2">
+                <div className={`p-1.5 sm:p-2 rounded-full ${isMicOn ? 'bg-success text-white status-online' : 'bg-gray-600 text-white'}`}>
+                  <i className={`fas ${isMicOn ? 'fa-microphone' : 'fa-microphone-slash'} text-xs sm:text-sm`}></i>
                 </div>
                 {isVideoOn && (
-                  <div className="bg-success text-white p-2 rounded-full">
-                    <i className="fas fa-video text-sm"></i>
+                  <div className="bg-success text-white p-1.5 sm:p-2 rounded-full status-online">
+                    <i className="fas fa-video text-xs sm:text-sm"></i>
                   </div>
                 )}
               </div>
-              <div className="absolute top-4 left-4 bg-white/20 text-white px-2 py-1 rounded text-sm">
+              <div className="absolute top-3 left-3 bg-black/30 text-white px-2 py-1 rounded text-xs sm:text-sm backdrop-blur-sm">
                 {localStorage.getItem('userName') || 'أنت'}
               </div>
               {isScreenSharing && (
-                <div className="absolute top-4 right-4 bg-blue-500 text-white px-2 py-1 rounded text-sm">
+                <div className="absolute top-3 right-3 bg-blue-500 text-white px-2 py-1 rounded text-xs sm:text-sm status-online">
                   <i className="fas fa-desktop ml-1"></i>
                   مشاركة الشاشة
                 </div>
@@ -287,14 +287,14 @@ export default function MeetingInterface({ meeting, onLeave }: MeetingInterfaceP
             <div className="hidden sm:flex items-center justify-center space-x-reverse space-x-6">
               
               {/* Primary Controls */}
-              <div className="flex items-center space-x-reverse space-x-3 bg-black/20 rounded-full px-4 py-2">
+              <div className="flex items-center space-x-reverse space-x-3 glass-effect rounded-full px-4 py-2">
                 <div className="relative group">
                   <Button
                     onClick={toggleMicrophone}
-                    className={`w-12 h-12 rounded-full transition-all duration-300 transform hover:scale-110 ${
+                    className={`w-12 h-12 rounded-full control-button transition-all duration-300 transform hover:scale-110 ${
                       isMicOn 
-                        ? 'bg-success hover:bg-success/90 text-white shadow-lg shadow-success/30' 
-                        : 'bg-red-500 hover:bg-red-600 text-white shadow-lg shadow-red-500/30'
+                        ? 'bg-success hover:bg-success/90 text-white shadow-lg shadow-success/30 status-online' 
+                        : 'bg-red-500 hover:bg-red-600 text-white shadow-lg shadow-red-500/30 status-busy'
                     }`}
                   >
                     <i className={`fas ${isMicOn ? 'fa-microphone' : 'fa-microphone-slash'} text-lg`}></i>
@@ -307,9 +307,9 @@ export default function MeetingInterface({ meeting, onLeave }: MeetingInterfaceP
                 <div className="relative group">
                   <Button
                     onClick={toggleVideo}
-                    className={`w-12 h-12 rounded-full transition-all duration-300 transform hover:scale-110 ${
+                    className={`w-12 h-12 rounded-full control-button transition-all duration-300 transform hover:scale-110 ${
                       isVideoOn
-                        ? 'bg-success hover:bg-success/90 text-white shadow-lg shadow-success/30'
+                        ? 'bg-success hover:bg-success/90 text-white shadow-lg shadow-success/30 status-online'
                         : 'bg-gray-600 hover:bg-gray-500 text-white shadow-lg shadow-gray-600/30'
                     }`}
                   >
@@ -323,9 +323,9 @@ export default function MeetingInterface({ meeting, onLeave }: MeetingInterfaceP
                 <div className="relative group">
                   <Button
                     onClick={toggleScreenShare}
-                    className={`w-12 h-12 rounded-full transition-all duration-300 transform hover:scale-110 ${
+                    className={`w-12 h-12 rounded-full control-button transition-all duration-300 transform hover:scale-110 ${
                       isScreenSharing
-                        ? 'bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/30'
+                        ? 'bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/30 status-online'
                         : 'bg-gray-600 hover:bg-gray-500 text-white shadow-lg shadow-gray-600/30'
                     }`}
                   >
@@ -393,13 +393,13 @@ export default function MeetingInterface({ meeting, onLeave }: MeetingInterfaceP
             {/* Mobile Layout */}
             <div className="sm:hidden">
               {/* Primary Row - Most Important Controls */}
-              <div className="flex items-center justify-center space-x-reverse space-x-4 mb-3">
+              <div className="flex items-center justify-center space-x-reverse space-x-4 mb-4">
                 <Button
                   onClick={toggleMicrophone}
-                  className={`w-14 h-14 rounded-full transition-all ${
+                  className={`w-16 h-16 rounded-full control-button transition-all duration-300 transform active:scale-95 ${
                     isMicOn 
-                      ? 'bg-success hover:bg-success/90 text-white' 
-                      : 'bg-red-500 hover:bg-red-600 text-white'
+                      ? 'bg-success hover:bg-success/90 text-white status-online shadow-xl' 
+                      : 'bg-red-500 hover:bg-red-600 text-white status-busy shadow-xl'
                   }`}
                 >
                   <i className={`fas ${isMicOn ? 'fa-microphone' : 'fa-microphone-slash'} text-xl`}></i>
@@ -407,10 +407,10 @@ export default function MeetingInterface({ meeting, onLeave }: MeetingInterfaceP
 
                 <Button
                   onClick={toggleVideo}
-                  className={`w-14 h-14 rounded-full transition-all ${
+                  className={`w-16 h-16 rounded-full control-button transition-all duration-300 transform active:scale-95 ${
                     isVideoOn
-                      ? 'bg-success hover:bg-success/90 text-white'
-                      : 'bg-gray-600 hover:bg-gray-500 text-white'
+                      ? 'bg-success hover:bg-success/90 text-white status-online shadow-xl'
+                      : 'bg-gray-600 hover:bg-gray-500 text-white shadow-xl'
                   }`}
                 >
                   <i className={`fas ${isVideoOn ? 'fa-video' : 'fa-video-slash'} text-xl`}></i>
@@ -418,65 +418,69 @@ export default function MeetingInterface({ meeting, onLeave }: MeetingInterfaceP
 
                 <Button
                   onClick={onLeave}
-                  className="w-14 h-14 bg-danger hover:bg-danger/90 text-white rounded-full transition-all"
+                  className="w-16 h-16 bg-danger hover:bg-danger/90 text-white rounded-full control-button transition-all duration-300 transform active:scale-95 status-busy shadow-xl"
                 >
                   <i className="fas fa-phone-slash text-xl"></i>
                 </Button>
               </div>
 
               {/* Secondary Row - Additional Controls */}
-              <div className="flex items-center justify-center space-x-reverse space-x-3">
+              <div className="flex items-center justify-center space-x-reverse space-x-2">
                 <Button
                   onClick={toggleScreenShare}
-                  className={`w-12 h-12 rounded-full transition-all ${
+                  className={`w-12 h-12 rounded-full control-button transition-all duration-300 ${
                     isScreenSharing
-                      ? 'bg-primary hover:bg-primary/90 text-white'
+                      ? 'bg-primary hover:bg-primary/90 text-white status-online'
                       : 'bg-gray-600 hover:bg-gray-500 text-white'
                   }`}
                 >
-                  <i className="fas fa-desktop"></i>
+                  <i className="fas fa-desktop text-sm"></i>
                 </Button>
 
                 <Button
                   onClick={toggleParticipants}
-                  className="w-12 h-12 bg-gray-700 hover:bg-gray-600 text-white rounded-full transition-all"
+                  className="w-12 h-12 bg-gray-700 hover:bg-gray-600 text-white rounded-full control-button transition-all duration-300"
                 >
-                  <i className="fas fa-users"></i>
+                  <i className="fas fa-users text-sm"></i>
                 </Button>
 
                 <Button
                   onClick={shareInviteLink}
-                  className="w-12 h-12 bg-blue-600 hover:bg-blue-500 text-white rounded-full transition-all"
+                  className="w-12 h-12 bg-blue-600 hover:bg-blue-500 text-white rounded-full control-button transition-all duration-300 glass-effect"
                 >
-                  <i className="fas fa-share"></i>
+                  <i className="fas fa-share text-sm"></i>
                 </Button>
 
                 <Button
                   onClick={toggleFullscreen}
-                  className="w-12 h-12 bg-purple-600 hover:bg-purple-500 text-white rounded-full transition-all"
+                  className="w-12 h-12 bg-purple-600 hover:bg-purple-500 text-white rounded-full control-button transition-all duration-300 glass-effect"
                 >
-                  <i className={`fas ${isFullscreen ? 'fa-compress' : 'fa-expand'}`}></i>
+                  <i className={`fas ${isFullscreen ? 'fa-compress' : 'fa-expand'} text-sm`}></i>
                 </Button>
               </div>
 
               {/* Mobile Status Indicators */}
-              <div className="flex items-center justify-center mt-3 space-x-reverse space-x-4 text-xs text-gray-400">
-                <div className={`flex items-center ${isMicOn ? 'text-success' : 'text-red-400'}`}>
-                  <div className={`w-2 h-2 rounded-full ml-1 ${isMicOn ? 'bg-success' : 'bg-red-500'}`}></div>
+              <div className="flex items-center justify-center mt-4 space-x-reverse space-x-3 text-xs">
+                <div className={`flex items-center px-2 py-1 rounded-full glass-effect ${isMicOn ? 'text-green-400' : 'text-red-400'}`}>
+                  <div className={`w-2 h-2 rounded-full ml-1 status-${isMicOn ? 'online' : 'busy'}`}></div>
                   <span>{isMicOn ? 'مفتوح' : 'مكتوم'}</span>
                 </div>
                 {isVideoOn && (
-                  <div className="flex items-center text-success">
-                    <div className="w-2 h-2 bg-success rounded-full ml-1"></div>
+                  <div className="flex items-center px-2 py-1 rounded-full glass-effect text-green-400">
+                    <div className="w-2 h-2 status-online rounded-full ml-1"></div>
                     <span>فيديو</span>
                   </div>
                 )}
                 {isScreenSharing && (
-                  <div className="flex items-center text-primary">
-                    <div className="w-2 h-2 bg-primary rounded-full ml-1"></div>
+                  <div className="flex items-center px-2 py-1 rounded-full glass-effect text-blue-400">
+                    <div className="w-2 h-2 status-online rounded-full ml-1"></div>
                     <span>مشاركة</span>
                   </div>
                 )}
+                <div className="flex items-center px-2 py-1 rounded-full glass-effect text-gray-300">
+                  <div className="w-2 h-2 status-online rounded-full ml-1"></div>
+                  <span>{formatDuration(meetingDuration)}</span>
+                </div>
               </div>
             </div>
 
@@ -503,8 +507,8 @@ export default function MeetingInterface({ meeting, onLeave }: MeetingInterfaceP
           
         </main>
         
-        {/* Chat Sidebar - Hidden on mobile, overlay on desktop */}
-        <div className={`${showParticipants ? 'block' : 'hidden'} md:block`}>
+        {/* Chat Sidebar - Responsive */}
+        <div className={`${showParticipants ? 'block' : 'hidden'} md:block transition-all duration-300`}>
           <ChatSidebar 
             meeting={meeting}
             messages={messages}
