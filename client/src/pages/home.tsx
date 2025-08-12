@@ -92,20 +92,20 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 text-gray-900" dir="rtl">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-800 text-white" dir="rtl">
       {/* Header */}
-      <header className="bg-white/80 backdrop-blur-sm border-b border-gray-200 px-6 py-4 sticky top-0 z-50">
+      <header className="bg-black/20 backdrop-blur-md border-b border-white/10 px-6 py-4 sticky top-0 z-50">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-reverse space-x-4">
             <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl flex items-center justify-center text-white font-bold text-lg shadow-lg">
               <i className="fas fa-video"></i>
             </div>
             <div>
-              <span className="mr-3 text-xl font-bold text-gray-800">Meet</span>
-              <p className="text-xs text-gray-500 mr-3">Powered by ma3k</p>
+              <span className="mr-3 text-xl font-bold text-white">Meet</span>
+              <p className="text-xs text-white/70 mr-3">Powered by ma3k</p>
             </div>
           </div>
-          <div className="text-sm text-gray-600">
+          <div className="text-sm text-white/80">
             منصة اجتماعات حديثة ومبتكرة
           </div>
         </div>
@@ -116,16 +116,16 @@ export default function Home() {
           
           {/* Create New Meeting */}
           <div className="lg:col-span-2">
-            <Card className="bg-white/80 backdrop-blur-sm shadow-xl border-0">
-              <CardHeader className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-t-lg">
-                <CardTitle className="text-xl font-bold text-gray-800 flex items-center">
+            <Card className="bg-black/20 backdrop-blur-sm shadow-xl border border-white/10">
+              <CardHeader className="bg-gradient-to-r from-blue-900/30 to-purple-900/30 rounded-t-lg">
+                <CardTitle className="text-xl font-bold text-white flex items-center">
                   <i className="fas fa-plus-circle text-blue-600 mr-3"></i>
                   بدء جلسة جديدة
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-white mb-2">
                     اسم الاجتماع
                   </label>
                   <Input
@@ -138,7 +138,7 @@ export default function Home() {
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-white mb-2">
                     نوع النشاط
                   </label>
                   <Select value={meetingType} onValueChange={setMeetingType}>
@@ -179,7 +179,7 @@ export default function Home() {
                       <div className="w-full border-t border-gray-300"></div>
                     </div>
                     <div className="relative flex justify-center text-sm">
-                      <span className="px-2 bg-white text-gray-500">أو</span>
+                      <span className="px-2 bg-black/20 text-white">أو</span>
                     </div>
                   </div>
                   
@@ -208,9 +208,9 @@ export default function Home() {
             </Card>
 
             {/* Features Overview */}
-            <Card className="mt-6 bg-white/60 backdrop-blur-sm shadow-xl border-0">
+            <Card className="mt-6 bg-black/10 backdrop-blur-sm shadow-xl border border-white/10">
               <CardHeader>
-                <CardTitle className="text-lg font-bold text-gray-800 flex items-center">
+                <CardTitle className="text-lg font-bold text-white flex items-center">
                   <i className="fas fa-star text-yellow-500 mr-3"></i>
                   مميزات Meet
                 </CardTitle>
@@ -222,8 +222,8 @@ export default function Home() {
                       <i className="fas fa-users text-blue-600"></i>
                     </div>
                     <div>
-                      <h4 className="font-medium text-gray-800">مشاركون افتراضيون</h4>
-                      <p className="text-sm text-gray-600">إضافة وإدارة شخصيات افتراضية للاجتماع</p>
+                      <h4 className="font-medium text-white">مشاركون افتراضيون</h4>
+                      <p className="text-sm text-white/70">إضافة وإدارة شخصيات افتراضية للاجتماع</p>
                     </div>
                   </div>
                   
@@ -232,8 +232,8 @@ export default function Home() {
                       <i className="fas fa-comments text-green-600"></i>
                     </div>
                     <div>
-                      <h4 className="font-medium text-gray-800">شات سريع</h4>
-                      <p className="text-sm text-gray-600">تواصل فوري وبسيط مع أدوات ذكية</p>
+                      <h4 className="font-medium text-white">شات سريع</h4>
+                      <p className="text-sm text-white/70">تواصل فوري وبسيط مع أدوات ذكية</p>
                     </div>
                   </div>
                   
@@ -242,8 +242,8 @@ export default function Home() {
                       <i className="fas fa-cog text-purple-600"></i>
                     </div>
                     <div>
-                      <h4 className="font-medium text-gray-800">إعدادات مخصصة</h4>
-                      <p className="text-sm text-gray-600">تحكم في سرعة ونوع المحادثات</p>
+                      <h4 className="font-medium text-white">إعدادات مخصصة</h4>
+                      <p className="text-sm text-white/70">تحكم في سرعة ونوع المحادثات</p>
                     </div>
                   </div>
                   
@@ -252,8 +252,8 @@ export default function Home() {
                       <i className="fas fa-clock text-orange-600"></i>
                     </div>
                     <div>
-                      <h4 className="font-medium text-gray-800">اجتماعات واقعية</h4>
-                      <p className="text-sm text-gray-600">مؤقتات وإشعارات تبدو طبيعية</p>
+                      <h4 className="font-medium text-white">اجتماعات واقعية</h4>
+                      <p className="text-sm text-white/70">مؤقتات وإشعارات تبدو طبيعية</p>
                     </div>
                   </div>
                 </div>
@@ -263,9 +263,9 @@ export default function Home() {
 
           {/* Active Meetings */}
           <div>
-            <Card className="bg-white/80 backdrop-blur-sm shadow-xl border-0">
-              <CardHeader className="bg-gradient-to-r from-green-50 to-blue-50 rounded-t-lg">
-                <CardTitle className="text-lg font-bold text-gray-800 flex items-center">
+            <Card className="bg-black/20 backdrop-blur-sm shadow-xl border border-white/10">
+              <CardHeader className="bg-gradient-to-r from-green-900/30 to-blue-900/30 rounded-t-lg">
+                <CardTitle className="text-lg font-bold text-white flex items-center">
                   <i className="fas fa-broadcast-tower text-green-600 mr-3"></i>
                   الجلسات النشطة
                 </CardTitle>
@@ -276,11 +276,11 @@ export default function Home() {
                     {meetings.map((meeting) => (
                       <div
                         key={meeting.id}
-                        className="p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
+                        className="p-3 bg-white/10 rounded-lg hover:bg-white/20 transition-colors cursor-pointer"
                         onClick={() => joinMeeting(meeting)}
                       >
-                        <h4 className="font-medium text-gray-800">{meeting.name}</h4>
-                        <p className="text-sm text-gray-600">{meeting.type}</p>
+                        <h4 className="font-medium text-white">{meeting.name}</h4>
+                        <p className="text-sm text-white/70">{meeting.type}</p>
                         <div className="flex items-center justify-between mt-2">
                           <div className="flex items-center space-x-reverse space-x-2">
                             <span className="text-xs text-green-600 bg-green-100 px-2 py-1 rounded">
@@ -331,11 +331,11 @@ export default function Home() {
                   </div>
                 ) : (
                   <div className="text-center py-8">
-                    <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <i className="fas fa-video text-gray-400 text-xl"></i>
+                    <div className="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <i className="fas fa-video text-white/50 text-xl"></i>
                     </div>
-                    <p className="text-gray-600 text-sm">لا توجد اجتماعات نشطة</p>
-                    <p className="text-gray-500 text-xs mt-1">ابدأ اجتماعاً جديداً للبدء</p>
+                    <p className="text-white/70 text-sm">لا توجد اجتماعات نشطة</p>
+                    <p className="text-white/50 text-xs mt-1">ابدأ اجتماعاً جديداً للبدء</p>
                   </div>
                 )}
               </CardContent>

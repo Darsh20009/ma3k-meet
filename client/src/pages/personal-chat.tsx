@@ -91,11 +91,12 @@ function PersonalChatContent() {
       
       if (data.type === 'message') {
         const newMessage = {
-          id: Date.now(),
+          id: Date.now().toString(),
           text: data.message,
           sender: data.senderName || 'مستخدم',
           timestamp: new Date(),
-          isUser: data.isFromRealUser && data.senderName === profile.name
+          isUser: data.isFromRealUser && data.senderName === profile.name,
+          reactions: []
         };
         setMessages(prev => [...prev, newMessage]);
       } else if (data.type === 'user_joined' && data.user) {
