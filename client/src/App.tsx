@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import Home from "@/pages/home";
 import JoinMeeting from "@/pages/join-meeting";
+import JoinByCode from "@/pages/join-by-code";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -12,6 +13,7 @@ function Router() {
     <Switch>
       <Route path="/" component={Home} />
       <Route path="/meeting/:meetingId" component={JoinMeeting} />
+      <Route path="/join" component={JoinByCode} />
       <Route component={NotFound} />
     </Switch>
   );

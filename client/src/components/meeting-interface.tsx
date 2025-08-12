@@ -4,6 +4,8 @@ import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
 import ParticipantManagement from "./participant-management";
 import ChatSidebar from "./chat-sidebar";
+import MeetingCodeDisplay from "./meeting-code-display";
+import QuickReactions from "./quick-reactions";
 import { useWebSocket } from "@/hooks/use-websocket";
 import type { Meeting, VirtualParticipant } from "@shared/schema";
 
@@ -563,6 +565,12 @@ export default function MeetingInterface({ meeting, onLeave }: MeetingInterfaceP
                   <i className="fas fa-share text-sm"></i>
                 </Button>
 
+                <QuickReactions 
+                  onReaction={(emoji) => {
+                    sendMessage(`تفاعل ${emoji}`, localStorage.getItem('userName') || 'مستخدم');
+                  }}
+                />
+
                 <Button
                   onClick={toggleFullscreen}
                   className="w-12 h-12 bg-purple-600 hover:bg-purple-500 text-white rounded-full control-button transition-all duration-300 glass-effect"
@@ -631,7 +639,13 @@ export default function MeetingInterface({ meeting, onLeave }: MeetingInterfaceP
 
         {/* Desktop Participants Sidebar */}
         {showParticipants && (
-          <div className="hidden md:block">
+          <div className="hidden md:block w-80 bg-white border-l border-gray-200 overflow-y-auto">
+            <div className="p-4 border-b border-gray-200">
+              <MeetingCodeDisplay 
+                meetingId={meeting.id}
+                meetingName={meeting.name}
+              />
+            </div>
             <ParticipantManagement 
               meeting={meeting}
               realUsers={realUsers}
