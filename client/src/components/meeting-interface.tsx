@@ -25,7 +25,7 @@ export default function MeetingInterface({ meeting, onLeave }: MeetingInterfaceP
   const meetingContainerRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   
-  const { isConnected, messages, sendMessage, setMessages } = useWebSocket(meeting.id);
+  const { isConnected, messages, realUsers, sendMessage, setMessages, setRealUsers } = useWebSocket(meeting.id);
 
   // Meeting timer
   useEffect(() => {
@@ -634,6 +634,7 @@ export default function MeetingInterface({ meeting, onLeave }: MeetingInterfaceP
           <div className="hidden md:block">
             <ParticipantManagement 
               meeting={meeting}
+              realUsers={realUsers}
             />
           </div>
         )}
@@ -688,6 +689,7 @@ export default function MeetingInterface({ meeting, onLeave }: MeetingInterfaceP
             <div className="h-full overflow-y-auto">
               <ParticipantManagement 
                 meeting={meeting}
+                realUsers={realUsers}
               />
             </div>
           </div>

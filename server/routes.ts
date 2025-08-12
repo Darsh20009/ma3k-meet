@@ -2,12 +2,13 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
 import { storage } from "./storage";
-import { insertMeetingSchema, insertParticipantSchema, insertMessageSchema } from "@shared/schema";
+import { insertMeetingSchema, insertParticipantSchema, insertUserSchema, insertMessageSchema } from "@shared/schema";
 import { z } from "zod";
 
 // Extend WebSocket type to include custom properties
 interface ExtendedWebSocket extends WebSocket {
   meetingId?: string;
+  userId?: string;
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -90,6 +91,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Real user routes
+  app.post("/api/users", async (req, res) => {
+    try {
+      const userData = insertUserSchema.parse(req.body);
+      const user = await storage.addRealUser(userData);
+      res.json(user);
+    } catch (error) {
+      res.status(400).json({ error: "Invalid user data" });
+    }
+  });
+
+  app.get("/api/meetings/:meetingId/users", async (req, res) => {
+    try {
+      const users = await storage.getRealUsers(req.params.meetingId);
+      res.json(users);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch users" });
+    }
+  });
+
+  app.put("/api/users/:id", async (req, res) => {
+    try {
+      const updates = req.body;
+      const user = await storage.updateRealUser(req.params.id, updates);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+      res.json(user);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update user" });
+    }
+  });
+
+  app.delete("/api/users/:id", async (req, res) => {
+    try {
+      const success = await storage.removeRealUser(req.params.id);
+      if (!success) {
+        return res.status(404).json({ error: "User not found" });
+      }
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to remove user" });
+    }
+  });
+
   // Chat routes
   app.get("/api/meetings/:meetingId/messages", async (req, res) => {
     try {
@@ -129,14 +175,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }));
         }
         
+        if (message.type === 'user_joined') {
+          // Add real user to meeting
+          const userData = {
+            meetingId: message.meetingId,
+            name: message.userName,
+            avatar: message.userAvatar || message.userName.slice(0, 2),
+            status: 'active',
+            isOnline: true,
+            isHost: message.isHost || false
+          };
+          
+          const user = await storage.addRealUser(userData);
+          extendedWs.userId = user.id;
+          
+          // Broadcast user joined to all clients
+          wss.clients.forEach((client) => {
+            const extendedClient = client as ExtendedWebSocket;
+            if (client.readyState === WebSocket.OPEN && extendedClient.meetingId === message.meetingId) {
+              client.send(JSON.stringify({
+                type: 'user_joined',
+                user: user
+              }));
+            }
+          });
+        }
+        
         if (message.type === 'send_message') {
           const chatMessage = await storage.addMessage({
             meetingId: message.meetingId,
-            senderId: null, // User message
+            senderId: message.senderId || null, // Can be user ID or participant ID
             senderName: message.senderName || 'أنت',
             senderAvatar: message.senderAvatar || 'أ',
             message: message.message,
-            isSystemMessage: false
+            isSystemMessage: false,
+            isFromRealUser: message.isFromRealUser || true
           });
 
           // Broadcast to all clients in the same meeting
@@ -155,8 +228,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
     });
 
-    ws.on('close', () => {
+    ws.on('close', async () => {
       console.log('Client disconnected from WebSocket');
+      
+      // Mark user as offline if they were connected
+      const extendedWs = ws as ExtendedWebSocket;
+      if (extendedWs.userId) {
+        await storage.updateRealUser(extendedWs.userId, { isOnline: false });
+        
+        // Broadcast user left to remaining clients
+        wss.clients.forEach((client) => {
+          const extendedClient = client as ExtendedWebSocket;
+          if (client.readyState === WebSocket.OPEN && extendedClient.meetingId === extendedWs.meetingId) {
+            client.send(JSON.stringify({
+              type: 'user_left',
+              userId: extendedWs.userId
+            }));
+          }
+        });
+      }
     });
   });
 

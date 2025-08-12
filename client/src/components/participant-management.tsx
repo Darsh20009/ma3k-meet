@@ -5,14 +5,15 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { apiRequest } from "@/lib/queryClient";
 import { arabicParticipantTemplates } from "@/lib/virtual-participants";
-import type { Meeting, VirtualParticipant } from "@shared/schema";
+import type { Meeting, VirtualParticipant, RealUser } from "@shared/schema";
 
 interface ParticipantManagementProps {
   meeting: Meeting;
   showParticipants?: boolean;
+  realUsers?: RealUser[];
 }
 
-export default function ParticipantManagement({ meeting }: ParticipantManagementProps) {
+export default function ParticipantManagement({ meeting, realUsers = [] }: ParticipantManagementProps) {
   const [newParticipantName, setNewParticipantName] = useState("");
   const [selectedTemplate, setSelectedTemplate] = useState<string>("");
   const queryClient = useQueryClient();
@@ -20,6 +21,13 @@ export default function ParticipantManagement({ meeting }: ParticipantManagement
   const { data: participants = [] } = useQuery<VirtualParticipant[]>({
     queryKey: ['/api/meetings', meeting.id, 'participants'],
   });
+
+  const { data: fetchedRealUsers = [] } = useQuery<RealUser[]>({
+    queryKey: ['/api/meetings', meeting.id, 'users'],
+  });
+
+  // Combine prop realUsers with fetched ones (prop takes priority for real-time updates)
+  const allRealUsers = realUsers.length > 0 ? realUsers : fetchedRealUsers;
 
   const addParticipantMutation = useMutation({
     mutationFn: async (participantData: { name: string; avatar: string; personality: string }) => {
@@ -160,6 +168,44 @@ export default function ParticipantManagement({ meeting }: ParticipantManagement
         </div>
       </div>
       
+      {/* Real Users Section */}
+      {allRealUsers.length > 0 && (
+        <div className="p-6 border-b border-gray-100">
+          <h3 className="text-sm font-semibold text-gray-600 mb-3 flex items-center">
+            <i className="fas fa-users text-blue-500 ml-2"></i>
+            المستخدمون الحقيقيون ({allRealUsers.length})
+          </h3>
+          <div className="space-y-2">
+            {allRealUsers.map((user) => (
+              <div
+                key={user.id}
+                className="flex items-center justify-between p-3 rounded-lg bg-blue-50 border border-blue-200"
+              >
+                <div className="flex items-center space-x-reverse space-x-3">
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-semibold shadow-lg text-xs">
+                    {user.avatar}
+                  </div>
+                  <div>
+                    <div className="font-medium text-gray-800 text-sm flex items-center">
+                      {user.name}
+                      {user.isHost && (
+                        <span className="mr-2 text-xs bg-blue-600 text-white px-2 py-0.5 rounded-full">
+                          مضيف
+                        </span>
+                      )}
+                    </div>
+                    <div className={`text-xs px-2 py-0.5 rounded-full ${user.isOnline ? 'text-green-600 bg-green-100' : 'text-gray-500 bg-gray-100'}`}>
+                      {user.isOnline ? 'متصل' : 'غير متصل'}
+                    </div>
+                  </div>
+                </div>
+                <div className={`w-3 h-3 rounded-full ${user.isOnline ? 'bg-green-500' : 'bg-gray-400'}`}></div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Participants Management */}
       <div className="p-6 border-b border-gray-100">
         <div className="flex justify-between items-center mb-4">

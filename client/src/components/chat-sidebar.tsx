@@ -74,7 +74,8 @@ export default function ChatSidebar({ meeting, messages, onSendMessage, setMessa
             senderAvatar: randomParticipant.avatar,
             message,
             timestamp: new Date(),
-            isSystemMessage: false
+            isSystemMessage: false,
+            isFromRealUser: false
           };
 
           setMessages(prev => [...prev, autoMessage]);
