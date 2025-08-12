@@ -105,6 +105,18 @@
   --shadow-2xl: 0px 2px 0px 0px hsl(213.3333 88.2845% 53.1373% / 0.00);
 }
 
+/* Floating reaction animations */
+@keyframes float-up {
+  0% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-200px) scale(1.5);
+  }
+}
+
 @layer base {
   * {
     @apply border-border;

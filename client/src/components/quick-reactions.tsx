@@ -48,7 +48,10 @@ export default function QuickReactions({ onReaction }: QuickReactionsProps) {
             style={{
               left: `${reaction.x}%`,
               top: `${reaction.y}%`,
-              animation: "float-up 3s ease-out forwards"
+              animationName: "float-up",
+              animationDuration: "3s",
+              animationTimingFunction: "ease-out",
+              animationFillMode: "forwards"
             }}
           >
             {reaction.emoji}
@@ -86,19 +89,7 @@ export default function QuickReactions({ onReaction }: QuickReactionsProps) {
         )}
       </div>
 
-      {/* CSS for floating animation */}
-      <style jsx>{`
-        @keyframes float-up {
-          0% {
-            opacity: 1;
-            transform: translateY(0) scale(1);
-          }
-          100% {
-            opacity: 0;
-            transform: translateY(-200px) scale(1.5);
-          }
-        }
-      `}</style>
+
     </div>
   );
 }

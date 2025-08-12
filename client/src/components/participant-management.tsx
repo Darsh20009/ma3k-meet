@@ -148,20 +148,57 @@ export default function ParticipantManagement({ meeting, realUsers = [] }: Parti
       
       {/* Meeting Creation Section */}
       <div className="p-6 border-b border-gray-100">
-        <h2 className="text-lg font-semibold text-gray-800 mb-4">معلومات الاجتماع</h2>
+        <h2 className="text-lg font-semibold text-gray-800 mb-4">بيانات الاجتماع</h2>
         
         <div className="space-y-3">
           <div>
             <span className="text-sm font-medium text-gray-700">اسم الاجتماع:</span>
-            <p className="text-sm text-gray-900 mt-1">{meeting.name}</p>
+            <p className="text-sm text-gray-900 mt-1 bg-gray-50 p-2 rounded">{meeting.name}</p>
           </div>
           <div>
             <span className="text-sm font-medium text-gray-700">نوع الاجتماع:</span>
-            <p className="text-sm text-gray-900 mt-1">{meeting.type}</p>
+            <p className="text-sm text-gray-900 mt-1 bg-gray-50 p-2 rounded">{meeting.type}</p>
           </div>
+          
+          {/* Meeting Code Display */}
+          <div>
+            <span className="text-sm font-medium text-gray-700">رمز الاجتماع:</span>
+            <div className="mt-1 bg-blue-50 p-2 rounded border border-blue-200">
+              <div className="font-mono text-lg font-bold text-blue-600 tracking-wider">
+                {(() => {
+                  const hash = meeting.id.split('-')[0];
+                  const numbers = hash.match(/\d/g) || [];
+                  let code = numbers.join('').slice(0, 6);
+                  if (code.length < 6) {
+                    const chars = hash.replace(/[^a-f0-9]/g, '');
+                    for (let i = 0; i < chars.length && code.length < 6; i++) {
+                      const char = chars[i];
+                      if (/[0-9]/.test(char)) {
+                        code += char;
+                      } else {
+                        code += (parseInt(char, 16) % 10).toString();
+                      }
+                    }
+                  }
+                  return code.slice(0, 6);
+                })()}
+              </div>
+              <p className="text-xs text-gray-600 mt-1">يمكن للآخرين الانضمام بهذا الرمز</p>
+            </div>
+          </div>
+
+          {/* Meeting ID */}
+          <div>
+            <span className="text-sm font-medium text-gray-700">معرف الجلسة:</span>
+            <div className="mt-1 bg-gray-50 p-2 rounded text-xs text-gray-600 font-mono break-all">
+              {meeting.id}
+            </div>
+          </div>
+
           <div className="flex items-center justify-between">
             <span className="text-sm font-medium text-gray-700">الحالة:</span>
-            <span className="text-xs bg-green-100 text-green-600 px-2 py-1 rounded">
+            <span className="text-xs bg-green-100 text-green-600 px-2 py-1 rounded flex items-center">
+              <div className="w-2 h-2 bg-green-500 rounded-full ml-1"></div>
               نشط
             </span>
           </div>

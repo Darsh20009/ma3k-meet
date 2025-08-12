@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useLocation } from "wouter";
 import MeetingInterface from "@/components/meeting-interface";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,6 +10,7 @@ import { apiRequest } from "@/lib/queryClient";
 import type { Meeting } from "@shared/schema";
 
 export default function Home() {
+  const [, setLocation] = useLocation();
   const [currentMeeting, setCurrentMeeting] = useState<Meeting | null>(null);
   const [newMeetingName, setNewMeetingName] = useState("");
   const [meetingType, setMeetingType] = useState("اجتماع عمل");
@@ -120,6 +122,26 @@ export default function Home() {
                   <i className="fas fa-plus ml-2"></i>
                   ابدأ الاجتماع
                 </Button>
+
+                <div className="mt-6 space-y-4">
+                  <div className="relative">
+                    <div className="absolute inset-0 flex items-center">
+                      <div className="w-full border-t border-gray-300"></div>
+                    </div>
+                    <div className="relative flex justify-center text-sm">
+                      <span className="px-2 bg-white text-gray-500">أو</span>
+                    </div>
+                  </div>
+                  
+                  <Button
+                    onClick={() => setLocation('/join')}
+                    variant="outline"
+                    className="w-full text-green-600 border-green-600 hover:bg-green-600 hover:text-white font-medium"
+                  >
+                    <i className="fas fa-key ml-2"></i>
+                    انضم برمز الاجتماع
+                  </Button>
+                </div>
 
                 <div className="mt-6 space-y-3">
                   <div className="relative">
