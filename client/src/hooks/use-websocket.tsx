@@ -53,14 +53,18 @@ export function useWebSocket(meetingId: string | null) {
     };
   }, [meetingId]);
 
-  const sendMessage = (message: string, senderName: string = 'أنت', senderAvatar: string = 'أ') => {
+  const sendMessage = (message: string, senderName?: string, senderAvatar?: string) => {
     if (ws.current?.readyState === WebSocket.OPEN && meetingId) {
+      // Get user name from localStorage if not provided
+      const userName = senderName || localStorage.getItem('userName') || 'أنت';
+      const userAvatar = senderAvatar || userName.slice(0, 2);
+      
       ws.current.send(JSON.stringify({
         type: 'send_message',
         meetingId,
         message,
-        senderName,
-        senderAvatar
+        senderName: userName,
+        senderAvatar: userAvatar
       }));
     }
   };

@@ -1,8 +1,18 @@
 # Overview
 
-This is a virtual meeting application built with React and Express that simulates meeting experiences with AI-generated virtual participants. The application creates realistic meeting scenarios with Arabic-speaking virtual participants who automatically engage in conversations, making it ideal for training, demonstrations, or testing meeting workflows.
+This is a virtual meeting application called "معك ميتيجس" (Ma'ak Meetings) built with React and Express that simulates meeting experiences with AI-generated virtual participants. The application creates realistic meeting scenarios with Arabic-speaking virtual participants who automatically engage in conversations, making it ideal for people who want to appear busy or engaged in meetings.
 
-The system allows users to create meetings, manage virtual participants with different personalities, and observe realistic chat interactions. All participant interactions are automated using predefined message patterns and timing controls.
+The system allows users to create meetings, manage virtual participants with different personalities, observe realistic chat interactions, share meeting links with others, and use fullscreen mode for a more immersive experience. All participant interactions are automated using predefined message patterns and timing controls.
+
+## Recent Changes (January 2025)
+
+✓ Added meeting link sharing functionality with copy-to-clipboard feature
+✓ Implemented fullscreen mode with zoom and expand capabilities  
+✓ Created join meeting page for external participants to enter meetings via shared links
+✓ Enhanced participant management with dynamic rendering of virtual attendees
+✓ Added user name persistence across sessions using localStorage
+✓ Improved Arabic RTL layout and responsive design
+✓ Added visual enhancements including hover effects and better color schemes
 
 ## User Preferences
 
@@ -45,3 +55,29 @@ Preferred communication style: Simple, everyday language.
 - **Development**: Replit-specific development tools and error handling
 
 The architecture follows a clean separation between client and server with shared type definitions, making it easy to maintain consistency across the full stack. The virtual participant system uses predefined Arabic message patterns with configurable timing to create realistic meeting interactions.
+
+## Key Features
+
+### Meeting Management
+- Create meetings with custom names and types (work meetings, study sessions, project reviews, brainstorming)
+- Share meeting links for others to join via unique URLs (/meeting/:meetingId)
+- Fullscreen mode with zoom and expand capabilities for immersive experience
+- Real-time participant count and meeting duration tracking
+
+### Virtual Participants
+- Pre-built Arabic personas with different personalities (professional, friendly, technical)
+- Automatic message generation with configurable timing (slow, medium, fast)
+- Dynamic status management (active, away, offline)
+- Custom participant creation with personalized avatars
+
+### Real-time Communication
+- WebSocket-based chat system with live message broadcasting
+- Support for both virtual participants and real users joining via links
+- Typing indicators and message timestamps
+- User name persistence across browser sessions
+
+### User Interface
+- Complete Arabic RTL support with Tajawal font
+- Responsive design optimized for different screen sizes
+- Dark meeting interface mimicking professional video conferencing tools
+- Interactive controls for microphone, video, screen sharing, and fullscreen modes

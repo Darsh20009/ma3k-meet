@@ -1,9 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
+import { useQuery } from "@tanstack/react-query";
 import ParticipantManagement from "./participant-management";
 import ChatSidebar from "./chat-sidebar";
 import { useWebSocket } from "@/hooks/use-websocket";
-import type { Meeting } from "@shared/schema";
+import type { Meeting, VirtualParticipant } from "@shared/schema";
 
 interface MeetingInterfaceProps {
   meeting: Meeting;
@@ -16,6 +18,10 @@ export default function MeetingInterface({ meeting, onLeave }: MeetingInterfaceP
   const [isScreenSharing, setIsScreenSharing] = useState(false);
   const [meetingDuration, setMeetingDuration] = useState(0);
   const [showParticipants, setShowParticipants] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [showShareDialog, setShowShareDialog] = useState(false);
+  const meetingContainerRef = useRef<HTMLDivElement>(null);
+  const { toast } = useToast();
   
   const { isConnected, messages, sendMessage, setMessages } = useWebSocket(meeting.id);
 
@@ -39,8 +45,44 @@ export default function MeetingInterface({ meeting, onLeave }: MeetingInterfaceP
   const toggleScreenShare = () => setIsScreenSharing(!isScreenSharing);
   const toggleParticipants = () => setShowParticipants(!showParticipants);
 
+  const toggleFullscreen = async () => {
+    if (!document.fullscreenElement) {
+      await meetingContainerRef.current?.requestFullscreen();
+      setIsFullscreen(true);
+    } else {
+      await document.exitFullscreen();
+      setIsFullscreen(false);
+    }
+  };
+
+  const shareInviteLink = () => {
+    const inviteUrl = `${window.location.origin}/meeting/${meeting.id}`;
+    navigator.clipboard.writeText(inviteUrl).then(() => {
+      toast({
+        title: "تم النسخ",
+        description: "تم نسخ رابط الاجتماع بنجاح",
+      });
+    }).catch(() => {
+      setShowShareDialog(true);
+    });
+  };
+
+  // Listen for fullscreen changes
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+  }, []);
+
   return (
-    <div className="h-screen flex flex-col bg-gray-900" dir="rtl">
+    <div 
+      ref={meetingContainerRef}
+      className={`h-screen flex flex-col bg-gray-900 ${isFullscreen ? 'p-0' : ''}`} 
+      dir="rtl"
+    >
       
       {/* Top Navigation */}
       <header className="bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center relative z-10">
@@ -58,6 +100,24 @@ export default function MeetingInterface({ meeting, onLeave }: MeetingInterfaceP
             <div className="w-2 h-2 bg-success rounded-full ml-2 animate-pulse"></div>
             <span>{isConnected ? 'متصل' : 'غير متصل'}</span>
           </div>
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={shareInviteLink}
+            className="text-primary hover:text-primary/80 hover:bg-primary/5"
+          >
+            <i className="fas fa-share ml-2"></i>
+            مشاركة
+          </Button>
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={toggleFullscreen}
+            className="text-gray-600 hover:text-gray-700 hover:bg-gray-50"
+          >
+            <i className={`fas ${isFullscreen ? 'fa-compress' : 'fa-expand'} ml-2`}></i>
+            {isFullscreen ? 'تصغير' : 'ملء الشاشة'}
+          </Button>
           <Button 
             variant="outline" 
             size="sm"
@@ -107,13 +167,21 @@ export default function MeetingInterface({ meeting, onLeave }: MeetingInterfaceP
             <div className="bg-gray-800 rounded-xl relative meeting-active p-4 col-span-2 h-64">
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="text-center">
-                  <div className="w-24 h-24 bg-gradient-to-br from-primary to-blue-600 rounded-full mx-auto flex items-center justify-center text-white text-2xl font-bold mb-4">
-                    أنت
-                  </div>
-                  <h3 className="text-white font-semibold text-lg">أنت (المضيف)</h3>
-                  <p className="text-gray-300 text-sm">
-                    {isMicOn ? 'يتحدث الآن' : 'صامت'}
-                  </p>
+                  {(() => {
+                    const userName = localStorage.getItem('userName') || 'أنت';
+                    const userAvatar = userName.slice(0, 2);
+                    return (
+                      <>
+                        <div className="w-24 h-24 bg-gradient-to-br from-primary to-blue-600 rounded-full mx-auto flex items-center justify-center text-white text-2xl font-bold mb-4">
+                          {userAvatar}
+                        </div>
+                        <h3 className="text-white font-semibold text-lg">{userName} (أنت)</h3>
+                        <p className="text-gray-300 text-sm">
+                          {isMicOn ? 'يتحدث الآن' : 'صامت'}
+                        </p>
+                      </>
+                    );
+                  })()}
                 </div>
               </div>
               <div className="absolute bottom-4 left-4 flex space-x-reverse space-x-2">
@@ -127,7 +195,7 @@ export default function MeetingInterface({ meeting, onLeave }: MeetingInterfaceP
                 )}
               </div>
               <div className="absolute top-4 left-4 bg-white/20 text-white px-2 py-1 rounded text-sm">
-                أنت
+                {localStorage.getItem('userName') || 'أنت'}
               </div>
               {isScreenSharing && (
                 <div className="absolute top-4 right-4 bg-blue-500 text-white px-2 py-1 rounded text-sm">
@@ -137,40 +205,56 @@ export default function MeetingInterface({ meeting, onLeave }: MeetingInterfaceP
               )}
             </div>
             
-            {/* Virtual Participants */}
-            <div className="bg-gray-700 rounded-xl relative p-4">
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="text-center">
-                  <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-teal-500 rounded-full mx-auto flex items-center justify-center text-white font-bold mb-2">
-                    فا
+            {/* Virtual Participants - Dynamic rendering */}
+            {(() => {
+              const { data: participants = [] } = useQuery<VirtualParticipant[]>({
+                queryKey: ['/api/meetings', meeting.id, 'participants'],
+              });
+
+              return participants.slice(0, 4).map((participant, index) => {
+                const colors = [
+                  'from-green-500 to-teal-500',
+                  'from-blue-500 to-purple-500',
+                  'from-orange-500 to-red-500',
+                  'from-purple-500 to-pink-500'
+                ];
+                
+                return (
+                  <div 
+                    key={participant.id} 
+                    className="bg-gray-700 rounded-xl relative p-4 participant-card"
+                    onClick={() => {
+                      // Future: Implement participant focus/zoom
+                    }}
+                  >
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="text-center">
+                        <div className={`w-16 h-16 bg-gradient-to-br ${colors[index % colors.length]} rounded-full mx-auto flex items-center justify-center text-white font-bold mb-2`}>
+                          {participant.avatar}
+                        </div>
+                        <h4 className="text-white font-medium">{participant.name}</h4>
+                        <span className={`text-xs px-2 py-1 rounded-full mt-1 inline-block ${
+                          participant.status === 'active' ? 'bg-success/20 text-success' :
+                          participant.status === 'away' ? 'bg-warning/20 text-warning' :
+                          'bg-gray-600 text-gray-300'
+                        }`}>
+                          {participant.status === 'active' ? 'نشط' :
+                           participant.status === 'away' ? 'بعيد' : 'غير متصل'}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="absolute top-3 left-3 bg-white/20 text-white px-2 py-1 rounded text-xs">
+                      {participant.name}
+                    </div>
+                    <div className={`absolute bottom-3 left-3 p-1 rounded-full ${
+                      participant.status === 'active' ? 'bg-success text-white' : 'bg-gray-600 text-white'
+                    }`}>
+                      <i className={`fas ${participant.status === 'active' ? 'fa-microphone' : 'fa-microphone-slash'} text-xs`}></i>
+                    </div>
                   </div>
-                  <h4 className="text-white font-medium">فاطمة أحمد</h4>
-                </div>
-              </div>
-              <div className="absolute top-3 left-3 bg-white/20 text-white px-2 py-1 rounded text-xs">
-                فاطمة أحمد
-              </div>
-              <div className="absolute bottom-3 left-3 bg-gray-600 text-white p-1 rounded-full">
-                <i className="fas fa-microphone-slash text-xs"></i>
-              </div>
-            </div>
-            
-            <div className="bg-gray-700 rounded-xl relative p-4">
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="text-center">
-                  <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full mx-auto flex items-center justify-center text-white font-bold mb-2">
-                    أح
-                  </div>
-                  <h4 className="text-white font-medium">أحمد محمد</h4>
-                </div>
-              </div>
-              <div className="absolute top-3 left-3 bg-white/20 text-white px-2 py-1 rounded text-xs">
-                أحمد محمد
-              </div>
-              <div className="absolute bottom-3 left-3 bg-success text-white p-1 rounded-full">
-                <i className="fas fa-microphone text-xs"></i>
-              </div>
-            </div>
+                );
+              });
+            })()}
             
           </div>
           
@@ -214,6 +298,20 @@ export default function MeetingInterface({ meeting, onLeave }: MeetingInterfaceP
                 <i className="fas fa-users"></i>
               </Button>
               <Button
+                onClick={shareInviteLink}
+                className="bg-blue-600 hover:bg-blue-500 text-white p-3 rounded-full transition-colors"
+                title="مشاركة رابط الاجتماع"
+              >
+                <i className="fas fa-share"></i>
+              </Button>
+              <Button
+                onClick={toggleFullscreen}
+                className="bg-purple-600 hover:bg-purple-500 text-white p-3 rounded-full transition-colors"
+                title={isFullscreen ? "تصغير الشاشة" : "ملء الشاشة"}
+              >
+                <i className={`fas ${isFullscreen ? 'fa-compress' : 'fa-expand'}`}></i>
+              </Button>
+              <Button
                 onClick={onLeave}
                 className="bg-danger hover:bg-danger/90 text-white p-3 rounded-full transition-colors"
               >
@@ -233,6 +331,56 @@ export default function MeetingInterface({ meeting, onLeave }: MeetingInterfaceP
         />
         
       </div>
+      
+      {/* Share Dialog Modal */}
+      {showShareDialog && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-96 max-w-md mx-4">
+            <h3 className="text-lg font-semibold text-gray-800 mb-4">مشاركة رابط الاجتماع</h3>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  رابط الاجتماع:
+                </label>
+                <div className="flex">
+                  <input
+                    type="text"
+                    value={`${window.location.origin}/meeting/${meeting.id}`}
+                    readOnly
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-r-md text-sm bg-gray-50"
+                  />
+                  <Button
+                    onClick={() => {
+                      const url = `${window.location.origin}/meeting/${meeting.id}`;
+                      navigator.clipboard.writeText(url).then(() => {
+                        toast({
+                          title: "تم النسخ",
+                          description: "تم نسخ رابط الاجتماع بنجاح",
+                        });
+                        setShowShareDialog(false);
+                      });
+                    }}
+                    className="px-4 py-2 bg-primary text-white rounded-l-md hover:bg-primary/90"
+                  >
+                    نسخ
+                  </Button>
+                </div>
+              </div>
+              <div className="text-sm text-gray-600">
+                شارك هذا الرابط مع الأشخاص الذين تريد دعوتهم للاجتماع
+              </div>
+            </div>
+            <div className="flex justify-end mt-6">
+              <Button 
+                variant="outline"
+                onClick={() => setShowShareDialog(false)}
+              >
+                إغلاق
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
       
     </div>
   );

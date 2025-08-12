@@ -5,6 +5,13 @@ import { storage } from "./storage";
 import { insertMeetingSchema, insertParticipantSchema, insertMessageSchema } from "@shared/schema";
 import { z } from "zod";
 
+// Extend WebSocket type to include custom properties
+declare module "ws" {
+  interface WebSocket {
+    meetingId?: string;
+  }
+}
+
 export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
 

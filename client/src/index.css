@@ -132,6 +132,39 @@
   .participant-avatar {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   }
+
+  /* Fullscreen styles */
+  .fullscreen-meeting {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 9999;
+    background: #111;
+  }
+
+  .fullscreen-meeting .meeting-container {
+    height: 100vh;
+  }
+
+  /* Enhanced meeting grid for fullscreen */
+  .fullscreen-grid {
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1rem;
+  }
+
+  /* Zoom hover effects */
+  .participant-card {
+    transition: all 0.3s ease;
+    cursor: pointer;
+  }
+
+  .participant-card:hover {
+    transform: scale(1.02);
+    z-index: 10;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+  }
   
   /* Custom animations */
   @keyframes slideIn {

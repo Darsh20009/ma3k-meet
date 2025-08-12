@@ -196,9 +196,24 @@ export default function Home() {
                         <h4 className="font-medium text-gray-800">{meeting.name}</h4>
                         <p className="text-sm text-gray-600">{meeting.type}</p>
                         <div className="flex items-center justify-between mt-2">
-                          <span className="text-xs text-green-600 bg-green-100 px-2 py-1 rounded">
-                            نشط
-                          </span>
+                          <div className="flex items-center space-x-reverse space-x-2">
+                            <span className="text-xs text-green-600 bg-green-100 px-2 py-1 rounded">
+                              نشط
+                            </span>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                const shareUrl = `${window.location.origin}/meeting/${meeting.id}`;
+                                navigator.clipboard.writeText(shareUrl);
+                                // You could add a toast here
+                              }}
+                              className="text-xs text-blue-600 hover:text-blue-800 px-2 py-1 bg-blue-50 rounded hover:bg-blue-100 transition-colors"
+                              title="نسخ رابط المشاركة"
+                            >
+                              <i className="fas fa-share text-xs ml-1"></i>
+                              مشاركة
+                            </button>
+                          </div>
                           <span className="text-xs text-gray-500">
                             {meeting.createdAt ? new Date(meeting.createdAt).toLocaleTimeString('ar-SA', {
                               hour: '2-digit',

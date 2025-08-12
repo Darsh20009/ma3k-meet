@@ -36,9 +36,11 @@ export class MemStorage implements IStorage {
     const id = randomUUID();
     const meeting: Meeting = {
       id,
-      ...insertMeeting,
+      name: insertMeeting.name,
+      type: insertMeeting.type || "اجتماع عمل",
       createdAt: new Date(),
-      isActive: true
+      isActive: insertMeeting.isActive ?? true,
+      settings: insertMeeting.settings
     };
     this.meetings.set(id, meeting);
     return meeting;
@@ -69,7 +71,11 @@ export class MemStorage implements IStorage {
     const id = randomUUID();
     const participant: VirtualParticipant = {
       id,
-      ...insertParticipant
+      meetingId: insertParticipant.meetingId,
+      name: insertParticipant.name,
+      avatar: insertParticipant.avatar,
+      status: insertParticipant.status || "active",
+      personality: insertParticipant.personality || "professional"
     };
     this.participants.set(id, participant);
     return participant;
@@ -96,8 +102,13 @@ export class MemStorage implements IStorage {
     const id = randomUUID();
     const message: ChatMessage = {
       id,
+      meetingId: insertMessage.meetingId,
+      senderId: insertMessage.senderId,
+      senderName: insertMessage.senderName,
+      senderAvatar: insertMessage.senderAvatar,
+      message: insertMessage.message,
       timestamp: new Date(),
-      ...insertMessage
+      isSystemMessage: insertMessage.isSystemMessage
     };
     this.messages.set(id, message);
     return message;
