@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import MeetingInterface from "@/components/meeting-interface";
+import EnhancedChat from "@/components/enhanced-chat";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -14,6 +15,10 @@ export default function Home() {
   const [currentMeeting, setCurrentMeeting] = useState<Meeting | null>(null);
   const [newMeetingName, setNewMeetingName] = useState("");
   const [meetingType, setMeetingType] = useState("اجتماع عمل");
+  const [showQuickChat, setShowQuickChat] = useState(false);
+  const [userName, setUserName] = useState(() => 
+    localStorage.getItem('meetUserName') || 'مستخدم جديد'
+  );
 
   const { data: meetings, refetch } = useQuery<Meeting[]>({
     queryKey: ['/api/meetings'],
@@ -55,19 +60,53 @@ export default function Home() {
     return <MeetingInterface meeting={currentMeeting} onLeave={leaveMeeting} />;
   }
 
+  if (showQuickChat) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 p-6" dir="rtl">
+        <div className="max-w-4xl mx-auto">
+          {/* Quick Chat Header */}
+          <div className="mb-6 flex items-center justify-between">
+            <div className="flex items-center space-x-reverse space-x-4">
+              <Button
+                onClick={() => setShowQuickChat(false)}
+                variant="outline"
+                size="icon"
+                className="w-10 h-10 rounded-full"
+              >
+                <i className="fas fa-arrow-right"></i>
+              </Button>
+              <div>
+                <h1 className="text-2xl font-bold text-gray-800">💬 شات سريع</h1>
+                <p className="text-gray-600">تواصل فوري وسهل</p>
+              </div>
+            </div>
+            <div className="text-sm text-gray-500">
+              مرحباً {userName}
+            </div>
+          </div>
+
+          <EnhancedChat meetingId="quick-chat" userName={userName} />
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-900" dir="rtl">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 text-gray-900" dir="rtl">
       {/* Header */}
-      <header className="bg-white border-b border-gray-200 px-6 py-4">
+      <header className="bg-white/80 backdrop-blur-sm border-b border-gray-200 px-6 py-4 sticky top-0 z-50">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-reverse space-x-4">
-            <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center text-white font-bold text-lg">
-              مع
+            <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl flex items-center justify-center text-white font-bold text-lg shadow-lg">
+              <i className="fas fa-video"></i>
             </div>
-            <span className="mr-3 text-xl font-bold text-gray-800">معك ميتيجس</span>
+            <div>
+              <span className="mr-3 text-xl font-bold text-gray-800">Meet</span>
+              <p className="text-xs text-gray-500 mr-3">Powered by ma3k</p>
+            </div>
           </div>
           <div className="text-sm text-gray-600">
-            منصة الاجتماعات الافتراضية الاحترافية
+            منصة اجتماعات حديثة ومبتكرة
           </div>
         </div>
       </header>
@@ -77,10 +116,11 @@ export default function Home() {
           
           {/* Create New Meeting */}
           <div className="lg:col-span-2">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-xl font-bold text-gray-800">
-                  إنشاء اجتماع جديد
+            <Card className="bg-white/80 backdrop-blur-sm shadow-xl border-0">
+              <CardHeader className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-t-lg">
+                <CardTitle className="text-xl font-bold text-gray-800 flex items-center">
+                  <i className="fas fa-plus-circle text-blue-600 mr-3"></i>
+                  بدء جلسة جديدة
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -99,29 +139,39 @@ export default function Home() {
                 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    نوع الاجتماع
+                    نوع النشاط
                   </label>
                   <Select value={meetingType} onValueChange={setMeetingType}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="اجتماع عمل">اجتماع عمل</SelectItem>
-                      <SelectItem value="جلسة دراسية">جلسة دراسية</SelectItem>
-                      <SelectItem value="مراجعة مشروع">مراجعة مشروع</SelectItem>
-                      <SelectItem value="عصف ذهني">عصف ذهني</SelectItem>
+                      <SelectItem value="اجتماع عمل">🤝 اجتماع عمل</SelectItem>
+                      <SelectItem value="شات سريع">💬 شات سريع</SelectItem>
+                      <SelectItem value="جلسة دراسية">📚 جلسة دراسية</SelectItem>
+                      <SelectItem value="عصف ذهني">💡 عصف ذهني</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 
-                <Button 
-                  onClick={createMeeting}
-                  disabled={!newMeetingName.trim()}
-                  className="w-full bg-primary hover:bg-primary/90 text-white"
-                >
-                  <i className="fas fa-plus ml-2"></i>
-                  ابدأ الاجتماع
-                </Button>
+                {meetingType === "شات سريع" ? (
+                  <Button 
+                    onClick={() => setShowQuickChat(true)}
+                    className="w-full bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white shadow-lg"
+                  >
+                    <i className="fas fa-comments ml-2"></i>
+                    ابدأ شات سريع
+                  </Button>
+                ) : (
+                  <Button 
+                    onClick={createMeeting}
+                    disabled={!newMeetingName.trim()}
+                    className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white shadow-lg"
+                  >
+                    <i className="fas fa-video ml-2"></i>
+                    ابدأ الاجتماع
+                  </Button>
+                )}
 
                 <div className="mt-6 space-y-4">
                   <div className="relative">
@@ -148,10 +198,11 @@ export default function Home() {
             </Card>
 
             {/* Features Overview */}
-            <Card className="mt-6">
+            <Card className="mt-6 bg-white/60 backdrop-blur-sm shadow-xl border-0">
               <CardHeader>
-                <CardTitle className="text-lg font-bold text-gray-800">
-                  مميزات معك ميتيجس
+                <CardTitle className="text-lg font-bold text-gray-800 flex items-center">
+                  <i className="fas fa-star text-yellow-500 mr-3"></i>
+                  مميزات Meet
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -171,8 +222,8 @@ export default function Home() {
                       <i className="fas fa-comments text-green-600"></i>
                     </div>
                     <div>
-                      <h4 className="font-medium text-gray-800">محادثات تلقائية</h4>
-                      <p className="text-sm text-gray-600">رسائل ذكية ومحادثات واقعية</p>
+                      <h4 className="font-medium text-gray-800">شات سريع</h4>
+                      <p className="text-sm text-gray-600">تواصل فوري وبسيط مع أدوات ذكية</p>
                     </div>
                   </div>
                   
@@ -202,10 +253,11 @@ export default function Home() {
 
           {/* Active Meetings */}
           <div>
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg font-bold text-gray-800">
-                  الاجتماعات النشطة
+            <Card className="bg-white/80 backdrop-blur-sm shadow-xl border-0">
+              <CardHeader className="bg-gradient-to-r from-green-50 to-blue-50 rounded-t-lg">
+                <CardTitle className="text-lg font-bold text-gray-800 flex items-center">
+                  <i className="fas fa-broadcast-tower text-green-600 mr-3"></i>
+                  الجلسات النشطة
                 </CardTitle>
               </CardHeader>
               <CardContent>
