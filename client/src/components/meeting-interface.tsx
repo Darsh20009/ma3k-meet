@@ -62,12 +62,24 @@ export default function MeetingInterface({ meeting, onLeave }: MeetingInterfaceP
   const shareInviteLink = async () => {
     const shareUrl = `${window.location.origin}/meeting/${meeting.id}`;
     
-    // Try to use native share API if available (mobile devices)
-    if (navigator.share && /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+    // Always try clipboard first for better compatibility
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      toast({
+        title: "تم النسخ",
+        description: "تم نسخ رابط الاجتماع إلى الحافظة",
+      });
+      return;
+    } catch (err) {
+      console.log("Clipboard failed, trying native share or showing dialog");
+    }
+    
+    // Try native share API if clipboard fails (mobile devices)
+    if (navigator.share) {
       try {
         await navigator.share({
           title: `اجتماع: ${meeting.name}`,
-          text: `انضم إلى الاجتماع`,
+          text: `انضم إلى الاجتماع: ${meeting.name}`,
           url: shareUrl,
         });
         toast({
@@ -76,21 +88,12 @@ export default function MeetingInterface({ meeting, onLeave }: MeetingInterfaceP
         });
         return;
       } catch (err) {
-        // Fall back to clipboard if share is cancelled
+        console.log("Native share failed, showing dialog");
       }
     }
     
-    // Fallback to clipboard for desktop or if native share fails
-    try {
-      await navigator.clipboard.writeText(shareUrl);
-      toast({
-        title: "تم النسخ",
-        description: "تم نسخ رابط الاجتماع إلى الحافظة",
-      });
-    } catch (err) {
-      // If clipboard API fails, show dialog as final fallback
-      setShowShareDialog(true);
-    }
+    // Final fallback: show dialog
+    setShowShareDialog(true);
   };
 
   // Listen for fullscreen changes
@@ -125,6 +128,12 @@ export default function MeetingInterface({ meeting, onLeave }: MeetingInterfaceP
             className={`w-10 h-10 rounded-full ${showChat ? 'bg-primary' : 'bg-gray-700'} text-white control-button`}
           >
             <i className="fas fa-comments text-sm"></i>
+          </Button>
+          <Button 
+            onClick={shareInviteLink}
+            className="w-10 h-10 rounded-full bg-blue-600 hover:bg-blue-500 text-white control-button"
+          >
+            <i className="fas fa-share text-sm"></i>
           </Button>
           <Button 
             onClick={toggleControlsPanel}

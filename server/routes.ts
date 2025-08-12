@@ -6,10 +6,8 @@ import { insertMeetingSchema, insertParticipantSchema, insertMessageSchema } fro
 import { z } from "zod";
 
 // Extend WebSocket type to include custom properties
-declare module "ws" {
-  interface WebSocket {
-    meetingId?: string;
-  }
+interface ExtendedWebSocket extends WebSocket {
+  meetingId?: string;
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -117,13 +115,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   wss.on('connection', (ws) => {
     console.log('Client connected to WebSocket');
+    const extendedWs = ws as ExtendedWebSocket;
 
     ws.on('message', async (data) => {
       try {
         const message = JSON.parse(data.toString());
         
         if (message.type === 'join_meeting') {
-          ws.meetingId = message.meetingId;
+          extendedWs.meetingId = message.meetingId;
           ws.send(JSON.stringify({
             type: 'joined',
             meetingId: message.meetingId
@@ -142,7 +141,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
           // Broadcast to all clients in the same meeting
           wss.clients.forEach((client) => {
-            if (client.readyState === WebSocket.OPEN && client.meetingId === message.meetingId) {
+            const extendedClient = client as ExtendedWebSocket;
+            if (client.readyState === WebSocket.OPEN && extendedClient.meetingId === message.meetingId) {
               client.send(JSON.stringify({
                 type: 'new_message',
                 message: chatMessage
