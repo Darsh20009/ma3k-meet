@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { nanoid } from "nanoid";
+import AuthWrapper from "@/components/AuthWrapper";
 
 interface ChatRoom {
   id: string;
@@ -16,7 +17,7 @@ interface ChatRoom {
   lastActivity: Date;
 }
 
-export default function ChatManager() {
+function ChatManagerContent() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   
@@ -246,5 +247,13 @@ export default function ChatManager() {
         </Card>
       </div>
     </div>
+  );
+}
+
+export default function ChatManager() {
+  return (
+    <AuthWrapper>
+      <ChatManagerContent />
+    </AuthWrapper>
   );
 }

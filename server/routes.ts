@@ -156,8 +156,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // WebSocket setup
+  // WebSocket setup for personal chats
   const wss = new WebSocketServer({ server: httpServer, path: '/ws' });
+  const chatConnections = new Map<string, Set<ExtendedWebSocket>>();
+  const userSessions = new Map<string, any>();
 
   wss.on('connection', (ws) => {
     console.log('Client connected to WebSocket');
@@ -167,6 +169,56 @@ export async function registerRoutes(app: Express): Promise<Server> {
       try {
         const message = JSON.parse(data.toString());
         
+        // Handle personal chat messages
+        if (message.type === 'join') {
+          extendedWs.meetingId = message.chatId;
+          extendedWs.userId = message.user.id;
+          
+          userSessions.set(message.user.id, message.user);
+          
+          if (!chatConnections.has(message.chatId)) {
+            chatConnections.set(message.chatId, new Set());
+          }
+          chatConnections.get(message.chatId)!.add(extendedWs);
+          
+          // Broadcast user joined to other participants
+          broadcastToChat(message.chatId, {
+            type: 'user_joined',
+            user: message.user
+          }, extendedWs);
+          return;
+        }
+        
+        if (message.type === 'leave') {
+          if (extendedWs.meetingId && extendedWs.userId) {
+            broadcastToChat(extendedWs.meetingId, {
+              type: 'user_left',
+              userId: extendedWs.userId
+            }, extendedWs);
+            
+            const chatConns = chatConnections.get(extendedWs.meetingId);
+            if (chatConns) {
+              chatConns.delete(extendedWs);
+              if (chatConns.size === 0) {
+                chatConnections.delete(extendedWs.meetingId);
+              }
+            }
+            userSessions.delete(extendedWs.userId);
+          }
+          return;
+        }
+        
+        if (message.type === 'message') {
+          if (extendedWs.meetingId && message.message) {
+            broadcastToChat(extendedWs.meetingId, {
+              type: 'message',
+              message: message.message
+            });
+          }
+          return;
+        }
+        
+        // Original meeting functionality
         if (message.type === 'join_meeting') {
           extendedWs.meetingId = message.meetingId;
           ws.send(JSON.stringify({
@@ -286,6 +338,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
     });
   });
+  
+  // Broadcast function for personal chats
+  function broadcastToChat(chatId: string, message: any, excludeWs?: ExtendedWebSocket) {
+    const chatConns = chatConnections.get(chatId);
+    if (chatConns) {
+      chatConns.forEach((clientWs) => {
+        if (clientWs !== excludeWs && clientWs.readyState === WebSocket.OPEN) {
+          clientWs.send(JSON.stringify(message));
+        }
+      });
+    }
+  }
 
   return httpServer;
 }

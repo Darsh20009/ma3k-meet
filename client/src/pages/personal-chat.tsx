@@ -1,9 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
+import AuthWrapper from "@/components/AuthWrapper";
 
 interface ChatMessage {
   id: string;
@@ -20,24 +22,103 @@ interface ChatRoom {
   owner: string;
   createdAt: Date;
   messages: ChatMessage[];
-  participants: string[];
+  participants: UserParticipant[];
 }
 
-export default function PersonalChat() {
+interface UserParticipant {
+  id: string;
+  name: string;
+  avatar: string;
+  isOnline: boolean;
+  lastSeen: Date;
+}
+
+interface UserProfile {
+  id: string;
+  name: string;
+  email: string;
+  avatar: string;
+  theme: string;
+  chatBackground: string;
+  createdAt: Date;
+}
+
+function PersonalChatContent() {
   const { chatId } = useParams<{ chatId: string }>();
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const wsRef = useRef<WebSocket | null>(null);
   
   const [chatRoom, setChatRoom] = useState<ChatRoom | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [newMessage, setNewMessage] = useState("");
-  const [userName, setUserName] = useState(() => 
-    localStorage.getItem('meetUserName') || `مستخدم_${Math.floor(Math.random() * 1000)}`
-  );
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const [onlineUsers, setOnlineUsers] = useState<UserParticipant[]>([]);
   const [isTyping, setIsTyping] = useState(false);
+  const [connectedUsers, setConnectedUsers] = useState<Set<string>>(new Set());
 
-  // Load chat room from localStorage
+  // Load user profile and setup WebSocket
   useEffect(() => {
+    const savedUser = localStorage.getItem('userProfile');
+    if (!savedUser) {
+      setLocation('/login');
+      return;
+    }
+    
+    const profile = JSON.parse(savedUser);
+    setUserProfile(profile);
+    
+    // Setup WebSocket connection
+    const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+    const wsUrl = `${protocol}//${window.location.host}/ws`;
+    const socket = new WebSocket(wsUrl);
+    
+    socket.onopen = () => {
+      console.log('Connected to WebSocket');
+      socket.send(JSON.stringify({
+        type: 'join',
+        chatId: chatId,
+        user: {
+          id: profile.id,
+          name: profile.name,
+          avatar: profile.avatar,
+          isOnline: true,
+          lastSeen: new Date()
+        }
+      }));
+    };
+    
+    socket.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      
+      switch (data.type) {
+        case 'message':
+          setMessages(prev => [...prev, data.message]);
+          break;
+        case 'user_joined':
+          setConnectedUsers(prev => new Set([...Array.from(prev), data.user.id]));
+          toast({
+            title: "مستخدم جديد انضم",
+            description: `${data.user.name} انضم للشات`,
+          });
+          break;
+        case 'user_left':
+          setConnectedUsers(prev => {
+            const newSet = new Set(Array.from(prev));
+            newSet.delete(data.userId);
+            return newSet;
+          });
+          break;
+        case 'typing':
+          setIsTyping(data.isTyping);
+          break;
+      }
+    };
+    
+    wsRef.current = socket;
+    
+    // Load chat room from localStorage
     const savedChats = JSON.parse(localStorage.getItem('personalChats') || '[]');
     const currentChat = savedChats.find((chat: ChatRoom) => chat.id === chatId);
     
@@ -48,17 +129,34 @@ export default function PersonalChat() {
       // Create new chat room
       const newChatRoom: ChatRoom = {
         id: chatId!,
-        name: `شات ${userName}`,
-        owner: userName,
+        name: `شات ${profile.name}`,
+        owner: profile.name,
         createdAt: new Date(),
         messages: [],
-        participants: [userName]
+        participants: [{
+          id: profile.id,
+          name: profile.name,
+          avatar: profile.avatar,
+          isOnline: true,
+          lastSeen: new Date()
+        }]
       };
       
       setChatRoom(newChatRoom);
       saveChatRoom(newChatRoom);
     }
-  }, [chatId, userName]);
+    
+    return () => {
+      if (socket.readyState === WebSocket.OPEN) {
+        socket.send(JSON.stringify({
+          type: 'leave',
+          chatId: chatId,
+          userId: profile.id
+        }));
+        socket.close();
+      }
+    };
+  }, [chatId, setLocation, toast]);
 
   const saveChatRoom = (roomToSave: ChatRoom) => {
     const savedChats = JSON.parse(localStorage.getItem('personalChats') || '[]');
@@ -67,18 +165,33 @@ export default function PersonalChat() {
     localStorage.setItem('personalChats', JSON.stringify(updatedChats));
   };
 
+  // Auto scroll to bottom
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
+
   const sendMessage = () => {
-    if (!newMessage.trim() || !chatRoom) return;
+    if (!newMessage.trim() || !chatRoom || !userProfile) return;
 
     const message: ChatMessage = {
       id: Date.now().toString(),
       text: newMessage,
-      sender: userName,
+      sender: userProfile.name,
       timestamp: new Date(),
       isUser: true,
       reactions: []
     };
 
+    // Send via WebSocket to other users
+    if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+      wsRef.current.send(JSON.stringify({
+        type: 'message',
+        chatId: chatId,
+        message: message
+      }));
+    }
+
+    // Update local state
     const updatedMessages = [...messages, message];
     setMessages(updatedMessages);
     
@@ -87,36 +200,6 @@ export default function PersonalChat() {
     saveChatRoom(updatedRoom);
     
     setNewMessage("");
-
-    // Auto responses
-    setTimeout(() => {
-      const autoResponses = [
-        "رائع! شكراً للمشاركة 🎉",
-        "أفكار ممتازة! 💡",
-        "هذا مثير للاهتمام 🤔",
-        "أتفق معك تماماً ✨",
-        "نقطة جيدة جداً 👍",
-        "هل يمكنك توضيح أكثر؟ 🤓",
-        "فكرة إبداعية! 🚀",
-        "مشاركة قيمة 💎"
-      ];
-      
-      const autoMessage: ChatMessage = {
-        id: (Date.now() + 1).toString(),
-        text: autoResponses[Math.floor(Math.random() * autoResponses.length)],
-        sender: "مساعد ذكي",
-        timestamp: new Date(),
-        isUser: false,
-        reactions: []
-      };
-      
-      const newUpdatedMessages = [...updatedMessages, autoMessage];
-      setMessages(newUpdatedMessages);
-      
-      const finalRoom = { ...chatRoom, messages: newUpdatedMessages };
-      setChatRoom(finalRoom);
-      saveChatRoom(finalRoom);
-    }, 1000 + Math.random() * 3000);
   };
 
   const copyShareLink = async () => {
@@ -155,8 +238,16 @@ export default function PersonalChat() {
     );
   }
 
+  if (!userProfile) {
+    return null;
+  }
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-800 text-white" dir="rtl">
+    <div 
+      className="min-h-screen text-white transition-all duration-300" 
+      style={{ background: userProfile.chatBackground }}
+      dir="rtl"
+    >
       {/* Header */}
       <header className="bg-black/20 backdrop-blur-md border-b border-white/10 p-4 sticky top-0 z-50">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
@@ -170,17 +261,23 @@ export default function PersonalChat() {
               <i className="fas fa-arrow-right"></i>
             </Button>
             <div className="flex items-center space-x-reverse space-x-3">
-              <div className="w-12 h-12 bg-gradient-to-r from-pink-500 to-yellow-500 rounded-full flex items-center justify-center text-white font-bold shadow-lg">
-                <i className="fas fa-comments"></i>
-              </div>
+              <Avatar className="w-12 h-12 bg-gradient-to-r from-pink-500 to-yellow-500 shadow-lg">
+                <AvatarFallback className="bg-transparent text-white text-lg">
+                  {userProfile.avatar}
+                </AvatarFallback>
+              </Avatar>
               <div>
                 <h1 className="text-xl font-bold">{chatRoom.name}</h1>
-                <p className="text-sm opacity-75">شات شخصي - {chatRoom.owner}</p>
+                <p className="text-sm opacity-75">شات شخصي - {userProfile.name}</p>
               </div>
             </div>
           </div>
           
           <div className="flex items-center space-x-reverse space-x-3">
+            <div className="flex items-center space-x-reverse space-x-2">
+              <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+              <span className="text-sm opacity-75">{connectedUsers.size + 1} متصل</span>
+            </div>
             <Button
               onClick={copyShareLink}
               className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white shadow-lg"
@@ -213,28 +310,45 @@ export default function PersonalChat() {
                   key={message.id}
                   className={`flex ${message.isUser ? 'justify-end' : 'justify-start'}`}
                 >
-                  <div
-                    className={`max-w-md px-6 py-3 rounded-2xl shadow-lg ${
-                      message.isUser
-                        ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white transform hover:scale-105 transition-transform'
-                        : 'bg-white/20 backdrop-blur-sm text-white border border-white/20'
-                    }`}
-                  >
+                  <div className="flex items-start space-x-reverse space-x-3">
                     {!message.isUser && (
-                      <div className="text-xs font-medium mb-2 opacity-75">
-                        {message.sender}
-                      </div>
+                      <Avatar className="w-8 h-8 bg-white/20 flex-shrink-0">
+                        <AvatarFallback className="bg-transparent text-white text-sm">
+                          🤖
+                        </AvatarFallback>
+                      </Avatar>
                     )}
-                    <p className="text-sm leading-relaxed">{message.text}</p>
-                    <div className="text-xs opacity-70 mt-2">
-                      {message.timestamp.toLocaleTimeString('ar-SA', {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      })}
+                    <div
+                      className={`max-w-md px-6 py-3 rounded-2xl shadow-lg ${
+                        message.isUser
+                          ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white transform hover:scale-105 transition-transform'
+                          : 'bg-white/20 backdrop-blur-sm text-white border border-white/20'
+                      }`}
+                    >
+                      {!message.isUser && (
+                        <div className="text-xs font-medium mb-2 opacity-75">
+                          {message.sender}
+                        </div>
+                      )}
+                      <p className="text-sm leading-relaxed">{message.text}</p>
+                      <div className="text-xs opacity-70 mt-2">
+                        {message.timestamp.toLocaleTimeString('ar-SA', {
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })}
+                      </div>
                     </div>
+                    {message.isUser && (
+                      <Avatar className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 flex-shrink-0">
+                        <AvatarFallback className="bg-transparent text-white text-sm">
+                          {userProfile.avatar}
+                        </AvatarFallback>
+                      </Avatar>
+                    )}
                   </div>
                 </div>
               ))}
+              <div ref={messagesEndRef} />
             </div>
             
             {/* Message Input */}
@@ -283,5 +397,13 @@ export default function PersonalChat() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function PersonalChat() {
+  return (
+    <AuthWrapper>
+      <PersonalChatContent />
+    </AuthWrapper>
   );
 }

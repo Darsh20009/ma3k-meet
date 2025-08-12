@@ -63,7 +63,7 @@ export default function Welcome() {
         {/* Action Buttons */}
         <div className={`flex flex-col sm:flex-row gap-4 transform transition-all duration-1000 delay-600 ${isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
           <Button
-            onClick={() => setLocation('/home')}
+            onClick={() => setLocation('/login')}
             size="lg"
             className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold px-8 py-4 rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
           >
@@ -72,7 +72,7 @@ export default function Welcome() {
           </Button>
           
           <Button
-            onClick={() => setLocation('/chats')}
+            onClick={() => setLocation('/login')}
             size="lg"
             className="bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white font-semibold px-8 py-4 rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
           >
