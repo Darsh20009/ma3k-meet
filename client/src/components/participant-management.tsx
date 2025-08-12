@@ -104,6 +104,37 @@ export default function ParticipantManagement({ meeting, showParticipants }: Par
     }
   };
 
+  const getParticipantIconStyle = (personality: string, avatar: string) => {
+    const styles = {
+      'professional': 'bg-gradient-to-br from-blue-600 to-indigo-700 shadow-lg shadow-blue-500/30',
+      'friendly': 'bg-gradient-to-br from-green-500 to-emerald-600 shadow-lg shadow-green-500/30',
+      'technical': 'bg-gradient-to-br from-purple-600 to-violet-700 shadow-lg shadow-purple-500/30',
+      'creative': 'bg-gradient-to-br from-pink-500 to-rose-600 shadow-lg shadow-pink-500/30',
+      'manager': 'bg-gradient-to-br from-amber-500 to-orange-600 shadow-lg shadow-amber-500/30',
+      'student': 'bg-gradient-to-br from-cyan-500 to-blue-600 shadow-lg shadow-cyan-500/30'
+    };
+    return styles[personality as keyof typeof styles] || styles.professional;
+  };
+
+  const getParticipantIcon = (personality: string, avatar: string) => {
+    // If avatar contains emojis or special characters, use it
+    if (avatar && (avatar.includes('🎨') || avatar.includes('👔') || avatar.includes('🎓') || avatar.length > 2)) {
+      return avatar;
+    }
+    
+    // Return FontAwesome icons based on personality
+    const icons = {
+      'professional': <i className="fas fa-briefcase text-sm"></i>,
+      'friendly': <i className="fas fa-smile text-sm"></i>,
+      'technical': <i className="fas fa-code text-sm"></i>,
+      'creative': <i className="fas fa-palette text-sm"></i>,
+      'manager': <i className="fas fa-crown text-sm"></i>,
+      'student': <i className="fas fa-graduation-cap text-sm"></i>
+    };
+    
+    return icons[personality as keyof typeof icons] || avatar.slice(0, 2);
+  };
+
   return (
     <aside className="w-80 bg-white border-l border-gray-200 flex flex-col">
       
@@ -189,8 +220,8 @@ export default function ParticipantManagement({ meeting, showParticipants }: Par
           {participants.map((participant) => (
             <div key={participant.id} className="flex items-center justify-between bg-gray-50 p-3 rounded-lg">
               <div className="flex items-center">
-                <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white text-xs font-medium">
-                  {participant.avatar}
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-medium ${getParticipantIconStyle(participant.personality, participant.avatar)}`}>
+                  {getParticipantIcon(participant.personality, participant.avatar)}
                 </div>
                 <span className="mr-2 text-sm font-medium">{participant.name}</span>
               </div>

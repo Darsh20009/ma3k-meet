@@ -43,8 +43,92 @@ export default function MeetingInterface({ meeting, onLeave }: MeetingInterfaceP
   };
 
   const toggleMicrophone = () => setIsMicOn(!isMicOn);
-  const toggleVideo = () => setIsVideoOn(!isVideoOn);
-  const toggleScreenShare = () => setIsScreenSharing(!isScreenSharing);
+  const toggleVideo = async () => {
+    try {
+      if (!isVideoOn) {
+        // Request camera access
+        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+          const stream = await navigator.mediaDevices.getUserMedia({
+            video: true,
+            audio: false
+          });
+          
+          // For demo purposes, we'll just toggle the state
+          // In a real app, you'd handle the stream
+          setIsVideoOn(true);
+          toast({
+            title: "تم تشغيل الكاميرا",
+            description: "الكاميرا متاحة الآن",
+          });
+          
+          // Stop the stream since this is just a demo
+          stream.getTracks().forEach(track => track.stop());
+        } else {
+          // Fallback for browsers that don't support getUserMedia
+          setIsVideoOn(true);
+          toast({
+            title: "الكاميرا",
+            description: "تم تشغيل الكاميرا (وضع التجريب)",
+          });
+        }
+      } else {
+        setIsVideoOn(false);
+        toast({
+          title: "تم إيقاف الكاميرا",
+          description: "تم إيقاف الكاميرا",
+        });
+      }
+    } catch (error) {
+      console.error('Camera error:', error);
+      toast({
+        title: "خطأ في الكاميرا",
+        description: "لم نتمكن من الوصول للكاميرا. تأكد من إعطاء الإذن.",
+        variant: "destructive"
+      });
+    }
+  };
+  const toggleScreenShare = async () => {
+    try {
+      if (!isScreenSharing) {
+        // Request screen sharing
+        if (navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia) {
+          const stream = await navigator.mediaDevices.getDisplayMedia({
+            video: true,
+            audio: true
+          });
+          
+          // For demo purposes, we'll just toggle the state
+          // In a real app, you'd handle the stream
+          setIsScreenSharing(true);
+          
+          // Listen for when user stops sharing
+          stream.getVideoTracks()[0].addEventListener('ended', () => {
+            setIsScreenSharing(false);
+          });
+        } else {
+          // Fallback for browsers that don't support getDisplayMedia
+          setIsScreenSharing(true);
+          toast({
+            title: "مشاركة الشاشة",
+            description: "تم تشغيل مشاركة الشاشة (وضع التجريب)",
+          });
+        }
+      } else {
+        setIsScreenSharing(false);
+        toast({
+          title: "تم إيقاف المشاركة",
+          description: "تم إيقاف مشاركة الشاشة",
+        });
+      }
+    } catch (error) {
+      console.error('Screen sharing error:', error);
+      toast({
+        title: "خطأ في مشاركة الشاشة",
+        description: "لم نتمكن من بدء مشاركة الشاشة. تأكد من إعطاء الإذن.",
+        variant: "destructive"
+      });
+    }
+  };
   const toggleParticipants = () => setShowParticipants(!showParticipants);
   const toggleChat = () => setShowChat(!showChat);
   const toggleControlsPanel = () => setShowControls(!showControls);
@@ -339,9 +423,7 @@ export default function MeetingInterface({ meeting, onLeave }: MeetingInterfaceP
                   >
                     <i className={`fas ${isMicOn ? 'fa-microphone' : 'fa-microphone-slash'} text-lg`}></i>
                   </Button>
-                  <div className="absolute -top-10 left-1/2 transform -translate-x-1/2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50">
-                    {isMicOn ? 'كتم الصوت' : 'إلغاء كتم الصوت'}
-                  </div>
+
                 </div>
 
                 <div className="relative group">
@@ -355,9 +437,7 @@ export default function MeetingInterface({ meeting, onLeave }: MeetingInterfaceP
                   >
                     <i className={`fas ${isVideoOn ? 'fa-video' : 'fa-video-slash'} text-lg`}></i>
                   </Button>
-                  <div className="absolute -top-10 left-1/2 transform -translate-x-1/2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50">
-                    {isVideoOn ? 'إيقاف الفيديو' : 'تشغيل الفيديو'}
-                  </div>
+
                 </div>
 
                 <div className="relative group">
@@ -371,9 +451,7 @@ export default function MeetingInterface({ meeting, onLeave }: MeetingInterfaceP
                   >
                     <i className={`fas fa-desktop text-lg`}></i>
                   </Button>
-                  <div className="absolute -top-10 left-1/2 transform -translate-x-1/2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50">
-                    {isScreenSharing ? 'إيقاف مشاركة الشاشة' : 'مشاركة الشاشة'}
-                  </div>
+
                 </div>
               </div>
 
@@ -386,9 +464,7 @@ export default function MeetingInterface({ meeting, onLeave }: MeetingInterfaceP
                   >
                     <i className="fas fa-users text-sm"></i>
                   </Button>
-                  <div className="absolute -top-10 left-1/2 transform -translate-x-1/2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50">
-                    المشاركون
-                  </div>
+
                 </div>
 
                 <div className="relative group">
@@ -398,9 +474,7 @@ export default function MeetingInterface({ meeting, onLeave }: MeetingInterfaceP
                   >
                     <i className="fas fa-share text-sm"></i>
                   </Button>
-                  <div className="absolute -top-10 left-1/2 transform -translate-x-1/2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50">
-                    مشاركة الرابط
-                  </div>
+
                 </div>
 
                 <div className="relative group">
@@ -410,9 +484,7 @@ export default function MeetingInterface({ meeting, onLeave }: MeetingInterfaceP
                   >
                     <i className={`fas ${isFullscreen ? 'fa-compress' : 'fa-expand'} text-sm`}></i>
                   </Button>
-                  <div className="absolute -top-10 left-1/2 transform -translate-x-1/2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50">
-                    {isFullscreen ? 'تصغير الشاشة' : 'ملء الشاشة'}
-                  </div>
+
                 </div>
               </div>
 
@@ -424,9 +496,7 @@ export default function MeetingInterface({ meeting, onLeave }: MeetingInterfaceP
                 >
                   <i className="fas fa-phone-slash text-lg"></i>
                 </Button>
-                <div className="absolute -top-10 left-1/2 transform -translate-x-1/2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50">
-                  مغادرة الاجتماع
-                </div>
+
               </div>
             </div>
 
