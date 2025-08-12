@@ -156,17 +156,17 @@ export default function Home() {
                 
                 {meetingType === "شات سريع" ? (
                   <Button 
-                    onClick={() => setShowQuickChat(true)}
-                    className="w-full bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white shadow-lg"
+                    onClick={() => setLocation('/chats')}
+                    className="w-full bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white shadow-lg transform hover:scale-105 transition-all duration-200"
                   >
                     <i className="fas fa-comments ml-2"></i>
-                    ابدأ شات سريع
+                    إدارة الشاتات الشخصية
                   </Button>
                 ) : (
                   <Button 
                     onClick={createMeeting}
                     disabled={!newMeetingName.trim()}
-                    className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white shadow-lg"
+                    className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white shadow-lg transform hover:scale-105 transition-all duration-200"
                   >
                     <i className="fas fa-video ml-2"></i>
                     ابدأ الاجتماع
@@ -183,14 +183,24 @@ export default function Home() {
                     </div>
                   </div>
                   
-                  <Button
-                    onClick={() => setLocation('/join')}
-                    variant="outline"
-                    className="w-full text-green-600 border-green-600 hover:bg-green-600 hover:text-white font-medium"
-                  >
-                    <i className="fas fa-key ml-2"></i>
-                    انضم برمز الاجتماع
-                  </Button>
+                  <div className="grid grid-cols-2 gap-3">
+                    <Button
+                      onClick={() => setLocation('/join')}
+                      variant="outline"
+                      className="text-green-600 border-green-600 hover:bg-green-600 hover:text-white font-medium"
+                    >
+                      <i className="fas fa-key ml-2"></i>
+                      انضم برمز
+                    </Button>
+                    <Button
+                      onClick={() => setLocation('/chats')}
+                      variant="outline" 
+                      className="text-purple-600 border-purple-600 hover:bg-purple-600 hover:text-white font-medium"
+                    >
+                      <i className="fas fa-comment-dots ml-2"></i>
+                      شاتاتي
+                    </Button>
+                  </div>
                 </div>
 
 

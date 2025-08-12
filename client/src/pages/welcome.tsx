@@ -54,8 +54,8 @@ export default function Welcome() {
               <div className="w-16 h-16 bg-gradient-to-r from-purple-400 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-4">
                 <i className="fas fa-comments text-2xl text-white"></i>
               </div>
-              <h3 className="text-xl font-bold mb-3">شات سريع</h3>
-              <p className="text-gray-300">تواصل فوري وسهل مع أصدقائك وزملائك</p>
+              <h3 className="text-xl font-bold mb-3">شات شخصي</h3>
+              <p className="text-gray-300">إنشاء شاتات خاصة برابط فريد مع حفظ دائم</p>
             </CardContent>
           </Card>
         </div>
@@ -67,8 +67,17 @@ export default function Welcome() {
             size="lg"
             className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold px-8 py-4 rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
           >
-            <i className="fas fa-play-circle mr-3"></i>
+            <i className="fas fa-rocket mr-3"></i>
             ابدأ الآن
+          </Button>
+          
+          <Button
+            onClick={() => setLocation('/chats')}
+            size="lg"
+            className="bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white font-semibold px-8 py-4 rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
+          >
+            <i className="fas fa-comments mr-3"></i>
+            شاتاتي الشخصية
           </Button>
           
           <Button
