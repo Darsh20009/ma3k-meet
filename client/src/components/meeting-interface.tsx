@@ -146,12 +146,14 @@ export default function MeetingInterface({ meeting, onLeave }: MeetingInterfaceP
   const shareInviteLink = async () => {
     const shareUrl = `${window.location.origin}/meeting/${meeting.id}`;
     
+    console.log("Sharing meeting URL:", shareUrl);
+    
     // Always try clipboard first for better compatibility
     try {
       await navigator.clipboard.writeText(shareUrl);
       toast({
         title: "تم النسخ",
-        description: "تم نسخ رابط الاجتماع إلى الحافظة",
+        description: `تم نسخ رابط الاجتماع: /meeting/${meeting.id}`,
       });
       return;
     } catch (err) {
@@ -626,6 +628,15 @@ export default function MeetingInterface({ meeting, onLeave }: MeetingInterfaceP
             setMessages={setMessages}
           />
         </div>
+
+        {/* Desktop Participants Sidebar */}
+        {showParticipants && (
+          <div className="hidden md:block">
+            <ParticipantManagement 
+              meeting={meeting}
+            />
+          </div>
+        )}
         
         {/* Mobile Chat Overlay */}
         <div className={`md:hidden fixed inset-0 bg-black bg-opacity-50 z-40 transition-opacity duration-300 ${
@@ -651,6 +662,32 @@ export default function MeetingInterface({ meeting, onLeave }: MeetingInterfaceP
                 messages={messages}
                 onSendMessage={sendMessage}
                 setMessages={setMessages}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Mobile Participants Overlay */}
+        <div className={`md:hidden fixed inset-0 bg-black bg-opacity-50 z-40 transition-opacity duration-300 ${
+          showParticipants ? 'opacity-100 visible' : 'opacity-0 invisible'
+        }`} onClick={toggleParticipants}>
+          <div className={`absolute left-0 top-0 h-full w-80 max-w-[85vw] bg-white transform transition-transform duration-300 ${
+            showParticipants ? 'translate-x-0' : '-translate-x-full'
+          }`} onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between p-4 border-b bg-gray-50">
+              <h3 className="font-semibold text-gray-800">المشاركون</h3>
+              <Button 
+                onClick={toggleParticipants}
+                variant="ghost" 
+                size="sm"
+                className="w-8 h-8 p-0"
+              >
+                <i className="fas fa-times"></i>
+              </Button>
+            </div>
+            <div className="h-full overflow-y-auto">
+              <ParticipantManagement 
+                meeting={meeting}
               />
             </div>
           </div>

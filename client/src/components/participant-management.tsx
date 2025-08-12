@@ -9,10 +9,10 @@ import type { Meeting, VirtualParticipant } from "@shared/schema";
 
 interface ParticipantManagementProps {
   meeting: Meeting;
-  showParticipants: boolean;
+  showParticipants?: boolean;
 }
 
-export default function ParticipantManagement({ meeting, showParticipants }: ParticipantManagementProps) {
+export default function ParticipantManagement({ meeting }: ParticipantManagementProps) {
   const [newParticipantName, setNewParticipantName] = useState("");
   const [selectedTemplate, setSelectedTemplate] = useState<string>("");
   const queryClient = useQueryClient();
