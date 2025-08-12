@@ -259,64 +259,132 @@ export default function MeetingInterface({ meeting, onLeave }: MeetingInterfaceP
           </div>
           
           {/* Meeting Controls */}
-          <div className="bg-gray-800 px-6 py-4 flex justify-center">
-            <div className="flex items-center space-x-reverse space-x-4">
-              <Button
-                onClick={toggleMicrophone}
-                className={`p-3 rounded-full transition-colors ${
-                  isMicOn 
-                    ? 'bg-success hover:bg-success/90 text-white' 
-                    : 'bg-red-500 hover:bg-red-600 text-white'
-                }`}
-              >
-                <i className={`fas ${isMicOn ? 'fa-microphone' : 'fa-microphone-slash'}`}></i>
-              </Button>
-              <Button
-                onClick={toggleVideo}
-                className={`p-3 rounded-full transition-colors ${
-                  isVideoOn
-                    ? 'bg-success hover:bg-success/90 text-white'
-                    : 'bg-gray-600 hover:bg-gray-500 text-white'
-                }`}
-              >
-                <i className={`fas ${isVideoOn ? 'fa-video' : 'fa-video-slash'}`}></i>
-              </Button>
-              <Button
-                onClick={toggleScreenShare}
-                className={`p-3 rounded-full transition-colors ${
-                  isScreenSharing
-                    ? 'bg-primary hover:bg-primary/90 text-white'
-                    : 'bg-gray-600 hover:bg-gray-500 text-white'
-                }`}
-              >
-                <i className="fas fa-desktop"></i>
-              </Button>
-              <Button
-                onClick={toggleParticipants}
-                className="bg-gray-600 hover:bg-gray-500 text-white p-3 rounded-full transition-colors"
-              >
-                <i className="fas fa-users"></i>
-              </Button>
-              <Button
-                onClick={shareInviteLink}
-                className="bg-blue-600 hover:bg-blue-500 text-white p-3 rounded-full transition-colors"
-                title="مشاركة رابط الاجتماع"
-              >
-                <i className="fas fa-share"></i>
-              </Button>
-              <Button
-                onClick={toggleFullscreen}
-                className="bg-purple-600 hover:bg-purple-500 text-white p-3 rounded-full transition-colors"
-                title={isFullscreen ? "تصغير الشاشة" : "ملء الشاشة"}
-              >
-                <i className={`fas ${isFullscreen ? 'fa-compress' : 'fa-expand'}`}></i>
-              </Button>
-              <Button
-                onClick={onLeave}
-                className="bg-danger hover:bg-danger/90 text-white p-3 rounded-full transition-colors"
-              >
-                <i className="fas fa-phone-slash"></i>
-              </Button>
+          <div className="bg-gradient-to-r from-gray-800 to-gray-900 px-6 py-6 border-t border-gray-700">
+            <div className="flex items-center justify-center space-x-reverse space-x-6">
+              
+              {/* Primary Controls */}
+              <div className="flex items-center space-x-reverse space-x-3 bg-black/20 rounded-full px-4 py-2">
+                <div className="relative group">
+                  <Button
+                    onClick={toggleMicrophone}
+                    className={`w-12 h-12 rounded-full transition-all duration-300 transform hover:scale-110 ${
+                      isMicOn 
+                        ? 'bg-success hover:bg-success/90 text-white shadow-lg shadow-success/30' 
+                        : 'bg-red-500 hover:bg-red-600 text-white shadow-lg shadow-red-500/30'
+                    }`}
+                  >
+                    <i className={`fas ${isMicOn ? 'fa-microphone' : 'fa-microphone-slash'} text-lg`}></i>
+                  </Button>
+                  <div className="absolute -top-10 left-1/2 transform -translate-x-1/2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                    {isMicOn ? 'كتم الصوت' : 'إلغاء كتم الصوت'}
+                  </div>
+                </div>
+
+                <div className="relative group">
+                  <Button
+                    onClick={toggleVideo}
+                    className={`w-12 h-12 rounded-full transition-all duration-300 transform hover:scale-110 ${
+                      isVideoOn
+                        ? 'bg-success hover:bg-success/90 text-white shadow-lg shadow-success/30'
+                        : 'bg-gray-600 hover:bg-gray-500 text-white shadow-lg shadow-gray-600/30'
+                    }`}
+                  >
+                    <i className={`fas ${isVideoOn ? 'fa-video' : 'fa-video-slash'} text-lg`}></i>
+                  </Button>
+                  <div className="absolute -top-10 left-1/2 transform -translate-x-1/2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                    {isVideoOn ? 'إيقاف الفيديو' : 'تشغيل الفيديو'}
+                  </div>
+                </div>
+
+                <div className="relative group">
+                  <Button
+                    onClick={toggleScreenShare}
+                    className={`w-12 h-12 rounded-full transition-all duration-300 transform hover:scale-110 ${
+                      isScreenSharing
+                        ? 'bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/30'
+                        : 'bg-gray-600 hover:bg-gray-500 text-white shadow-lg shadow-gray-600/30'
+                    }`}
+                  >
+                    <i className={`fas fa-desktop text-lg`}></i>
+                  </Button>
+                  <div className="absolute -top-10 left-1/2 transform -translate-x-1/2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                    {isScreenSharing ? 'إيقاف مشاركة الشاشة' : 'مشاركة الشاشة'}
+                  </div>
+                </div>
+              </div>
+
+              {/* Secondary Controls */}
+              <div className="flex items-center space-x-reverse space-x-3">
+                <div className="relative group">
+                  <Button
+                    onClick={toggleParticipants}
+                    className="w-11 h-11 bg-gray-700 hover:bg-gray-600 text-white rounded-full transition-all duration-300 transform hover:scale-110"
+                  >
+                    <i className="fas fa-users text-sm"></i>
+                  </Button>
+                  <div className="absolute -top-10 left-1/2 transform -translate-x-1/2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                    المشاركون
+                  </div>
+                </div>
+
+                <div className="relative group">
+                  <Button
+                    onClick={shareInviteLink}
+                    className="w-11 h-11 bg-blue-600 hover:bg-blue-500 text-white rounded-full transition-all duration-300 transform hover:scale-110 shadow-lg shadow-blue-600/20"
+                  >
+                    <i className="fas fa-share text-sm"></i>
+                  </Button>
+                  <div className="absolute -top-10 left-1/2 transform -translate-x-1/2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                    مشاركة الرابط
+                  </div>
+                </div>
+
+                <div className="relative group">
+                  <Button
+                    onClick={toggleFullscreen}
+                    className="w-11 h-11 bg-purple-600 hover:bg-purple-500 text-white rounded-full transition-all duration-300 transform hover:scale-110 shadow-lg shadow-purple-600/20"
+                  >
+                    <i className={`fas ${isFullscreen ? 'fa-compress' : 'fa-expand'} text-sm`}></i>
+                  </Button>
+                  <div className="absolute -top-10 left-1/2 transform -translate-x-1/2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                    {isFullscreen ? 'تصغير الشاشة' : 'ملء الشاشة'}
+                  </div>
+                </div>
+              </div>
+
+              {/* Leave Button */}
+              <div className="relative group">
+                <Button
+                  onClick={onLeave}
+                  className="w-12 h-12 bg-danger hover:bg-danger/90 text-white rounded-full transition-all duration-300 transform hover:scale-110 shadow-lg shadow-red-500/30"
+                >
+                  <i className="fas fa-phone-slash text-lg"></i>
+                </Button>
+                <div className="absolute -top-10 left-1/2 transform -translate-x-1/2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                  مغادرة الاجتماع
+                </div>
+              </div>
+
+            </div>
+
+            {/* Status Bar */}
+            <div className="flex items-center justify-center mt-4 space-x-reverse space-x-6 text-sm text-gray-400">
+              <div className="flex items-center">
+                <div className={`w-2 h-2 rounded-full ml-2 ${isMicOn ? 'bg-success' : 'bg-red-500'}`}></div>
+                <span>{isMicOn ? 'الميكروفون مفتوح' : 'الميكروفون مكتوم'}</span>
+              </div>
+              {isVideoOn && (
+                <div className="flex items-center">
+                  <div className="w-2 h-2 bg-success rounded-full ml-2"></div>
+                  <span>الفيديو مفتوح</span>
+                </div>
+              )}
+              {isScreenSharing && (
+                <div className="flex items-center">
+                  <div className="w-2 h-2 bg-primary rounded-full ml-2"></div>
+                  <span>مشاركة الشاشة نشطة</span>
+                </div>
+              )}
             </div>
           </div>
           
