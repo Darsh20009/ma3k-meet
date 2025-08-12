@@ -1,8 +1,8 @@
 # Overview
 
-This is a virtual meeting application called "معك ميتيجس" (Ma'ak Meetings) built with React and Express that simulates meeting experiences with AI-generated virtual participants. The application creates realistic meeting scenarios with Arabic-speaking virtual participants who automatically engage in conversations, making it ideal for people who want to appear busy or engaged in meetings.
+This is a virtual meeting application called "معك ميتيجس" (Ma'ak Meetings) built with React and Express that surpasses Zoom's functionality with innovative features. The application creates realistic meeting scenarios with Arabic-speaking virtual participants who automatically engage in conversations, while also supporting real user-to-user communication through WebRTC technology.
 
-The system allows users to create meetings, manage virtual participants with different personalities, observe realistic chat interactions, share meeting links with others, and use fullscreen mode for a more immersive experience. All participant interactions are automated using predefined message patterns and timing controls.
+The system allows users to create meetings with 6-digit codes, manage virtual participants with different personalities, observe realistic chat interactions, share meeting links with others, use fullscreen mode, and communicate with real users through voice and video. All participant interactions are automated using predefined message patterns and timing controls.
 
 ## Recent Changes (January 2025)
 
@@ -24,6 +24,17 @@ The system allows users to create meetings, manage virtual participants with dif
 ✓ Enhanced participant templates with emojis (🎨 Designer, 👔 Manager, 🎓 Student)
 ✓ Improved sharing mechanism with better error handling and debug logging
 ✓ Fixed participant management display issues across mobile and desktop
+
+## Current Enhancement (August 2025)
+
+✓ Added comprehensive meeting data display with 6-digit meeting codes
+✓ Implemented join-by-code functionality with dedicated page (/join)
+✓ Enhanced participant management with detailed meeting information
+✓ Added quick emoji reactions with floating animations
+✓ Fixed duplicate "join by code" buttons in UI
+✓ Added WebRTC infrastructure for real user-to-user voice/video communication
+✓ Enhanced media controls with proper stream management
+✓ Improved WebSocket signaling for WebRTC peer connections
 
 ## Migration and Enhancement (August 2025)
 

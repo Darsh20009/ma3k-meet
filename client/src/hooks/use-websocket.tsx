@@ -32,13 +32,15 @@ export function useWebSocket(meetingId: string | null) {
       // Then announce user joined if we have user info
       const userName = localStorage.getItem('userName');
       if (userName) {
-        ws.current?.send(JSON.stringify({
-          type: 'user_joined',
-          meetingId,
-          userName,
-          userAvatar: userName.slice(0, 2),
-          isHost: false
-        }));
+        setTimeout(() => {
+          ws.current?.send(JSON.stringify({
+            type: 'user_joined',
+            meetingId,
+            userName,
+            userAvatar: userName.slice(0, 2),
+            isHost: false
+          }));
+        }, 100);
       }
     };
 

@@ -24,7 +24,10 @@ export default function MeetingInterface({ meeting, onLeave }: MeetingInterfaceP
   const [showControls, setShowControls] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showShareDialog, setShowShareDialog] = useState(false);
+  const [localStream, setLocalStream] = useState<MediaStream | null>(null);
+  const [remoteStreams, setRemoteStreams] = useState<Map<string, MediaStream>>(new Map());
   const meetingContainerRef = useRef<HTMLDivElement>(null);
+  const localVideoRef = useRef<HTMLVideoElement>(null);
   const { toast } = useToast();
   
   const { isConnected, messages, realUsers, sendMessage, setMessages, setRealUsers } = useWebSocket(meeting.id);
@@ -38,55 +41,137 @@ export default function MeetingInterface({ meeting, onLeave }: MeetingInterfaceP
     return () => clearInterval(interval);
   }, []);
 
+  // Initialize media stream when joining meeting
+  useEffect(() => {
+    const initializeMedia = async () => {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ 
+          video: false, 
+          audio: true 
+        });
+        setLocalStream(stream);
+        if (localVideoRef.current) {
+          localVideoRef.current.srcObject = stream;
+        }
+      } catch (error) {
+        console.log('Could not access media devices:', error);
+      }
+    };
+
+    initializeMedia();
+
+    return () => {
+      if (localStream) {
+        localStream.getTracks().forEach(track => track.stop());
+      }
+    };
+  }, []);
+
   const formatDuration = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${minutes}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const toggleMicrophone = () => setIsMicOn(!isMicOn);
+  const toggleMicrophone = async () => {
+    if (localStream) {
+      const audioTracks = localStream.getAudioTracks();
+      if (audioTracks.length > 0) {
+        audioTracks.forEach(track => {
+          track.enabled = !isMicOn;
+        });
+        setIsMicOn(!isMicOn);
+        toast({
+          title: isMicOn ? "تم كتم الصوت" : "تم تفعيل الصوت",
+          description: isMicOn ? "لن يسمعك الآخرون" : "يمكن للآخرين سماعك الآن",
+        });
+      }
+    } else if (!isMicOn) {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ 
+          video: isVideoOn, 
+          audio: true 
+        });
+        setLocalStream(stream);
+        if (localVideoRef.current) {
+          localVideoRef.current.srcObject = stream;
+        }
+        setIsMicOn(true);
+        toast({
+          title: "تم تفعيل الصوت",
+          description: "يمكن للآخرين سماعك الآن",
+        });
+      } catch (error) {
+        toast({
+          title: "خطأ في الصوت",
+          description: "تعذر الوصول للميكروفون",
+          variant: "destructive"
+        });
+      }
+    }
+  };
+  
   const toggleVideo = async () => {
-    try {
-      if (!isVideoOn) {
-        // Request camera access
-        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-          const stream = await navigator.mediaDevices.getUserMedia({
-            video: true,
-            audio: false
+    if (localStream) {
+      const videoTracks = localStream.getVideoTracks();
+      if (videoTracks.length > 0) {
+        videoTracks.forEach(track => {
+          track.enabled = !isVideoOn;
+        });
+        setIsVideoOn(!isVideoOn);
+        toast({
+          title: isVideoOn ? "تم إيقاف الكاميرا" : "تم تشغيل الكاميرا",
+          description: isVideoOn ? "لن يراك الآخرون" : "يمكن للآخرين رؤيتك الآن",
+        });
+      } else if (!isVideoOn) {
+        try {
+          const newStream = await navigator.mediaDevices.getUserMedia({ 
+            video: true, 
+            audio: isMicOn 
           });
-          
-          // For demo purposes, we'll just toggle the state
-          // In a real app, you'd handle the stream
+          // Stop old stream
+          if (localStream) {
+            localStream.getTracks().forEach(track => track.stop());
+          }
+          setLocalStream(newStream);
+          if (localVideoRef.current) {
+            localVideoRef.current.srcObject = newStream;
+          }
           setIsVideoOn(true);
           toast({
             title: "تم تشغيل الكاميرا",
-            description: "الكاميرا متاحة الآن",
+            description: "يمكن للآخرين رؤيتك الآن",
           });
-          
-          // Stop the stream since this is just a demo
-          stream.getTracks().forEach(track => track.stop());
-        } else {
-          // Fallback for browsers that don't support getUserMedia
-          setIsVideoOn(true);
+        } catch (error) {
           toast({
-            title: "الكاميرا",
-            description: "تم تشغيل الكاميرا (وضع التجريب)",
+            title: "خطأ في الفيديو",
+            description: "تعذر الوصول للكاميرا",
+            variant: "destructive"
           });
         }
-      } else {
-        setIsVideoOn(false);
+      }
+    } else if (!isVideoOn) {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ 
+          video: true, 
+          audio: isMicOn 
+        });
+        setLocalStream(stream);
+        if (localVideoRef.current) {
+          localVideoRef.current.srcObject = stream;
+        }
+        setIsVideoOn(true);
         toast({
-          title: "تم إيقاف الكاميرا",
-          description: "تم إيقاف الكاميرا",
+          title: "تم تشغيل الكاميرا",
+          description: "يمكن للآخرين رؤيتك الآن",
+        });
+      } catch (error) {
+        toast({
+          title: "خطأ في الفيديو",
+          description: "تعذر الوصول للكاميرا",
+          variant: "destructive"
         });
       }
-    } catch (error) {
-      console.error('Camera error:', error);
-      toast({
-        title: "خطأ في الكاميرا",
-        description: "لم نتمكن من الوصول للكاميرا. تأكد من إعطاء الإذن.",
-        variant: "destructive"
-      });
     }
   };
   const toggleScreenShare = async () => {

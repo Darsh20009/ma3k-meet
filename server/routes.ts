@@ -174,6 +174,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
             meetingId: message.meetingId
           }));
         }
+
+        // WebRTC signaling
+        if (message.type === 'join_webrtc') {
+          extendedWs.meetingId = message.meetingId;
+          extendedWs.userId = message.userId;
+          
+          // Notify other users in the meeting
+          wss.clients.forEach((client) => {
+            const extendedClient = client as ExtendedWebSocket;
+            if (client !== ws && client.readyState === WebSocket.OPEN && 
+                extendedClient.meetingId === message.meetingId) {
+              client.send(JSON.stringify({
+                type: 'webrtc_user_joined',
+                userId: message.userId,
+                userName: message.userName
+              }));
+            }
+          });
+        }
+
+        if (message.type === 'webrtc_offer' || message.type === 'webrtc_answer' || message.type === 'webrtc_ice_candidate') {
+          // Forward signaling messages to target user
+          wss.clients.forEach((client) => {
+            const extendedClient = client as ExtendedWebSocket;
+            if (client.readyState === WebSocket.OPEN && 
+                extendedClient.userId === message.targetUserId &&
+                extendedClient.meetingId === message.meetingId) {
+              client.send(JSON.stringify({
+                type: message.type,
+                userId: message.userId,
+                ...(message.offer && { offer: message.offer }),
+                ...(message.answer && { answer: message.answer }),
+                ...(message.candidate && { candidate: message.candidate })
+              }));
+            }
+          });
+        }
         
         if (message.type === 'user_joined') {
           // Add real user to meeting
@@ -181,7 +218,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             meetingId: message.meetingId,
             name: message.userName,
             avatar: message.userAvatar || message.userName.slice(0, 2),
-            status: 'active',
+            status: 'active' as const,
             isOnline: true,
             isHost: message.isHost || false
           };
@@ -189,7 +226,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const user = await storage.addRealUser(userData);
           extendedWs.userId = user.id;
           
-          // Broadcast user joined to all clients
+          // Broadcast user joined to all clients in this meeting
           wss.clients.forEach((client) => {
             const extendedClient = client as ExtendedWebSocket;
             if (client.readyState === WebSocket.OPEN && extendedClient.meetingId === message.meetingId) {
@@ -204,15 +241,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (message.type === 'send_message') {
           const chatMessage = await storage.addMessage({
             meetingId: message.meetingId,
-            senderId: message.senderId || null, // Can be user ID or participant ID
+            senderId: extendedWs.userId || null, // Use the stored user ID
             senderName: message.senderName || 'أنت',
             senderAvatar: message.senderAvatar || 'أ',
             message: message.message,
             isSystemMessage: false,
-            isFromRealUser: message.isFromRealUser || true
+            isFromRealUser: true
           });
 
-          // Broadcast to all clients in the same meeting
+          // Broadcast message to all clients in the same meeting
           wss.clients.forEach((client) => {
             const extendedClient = client as ExtendedWebSocket;
             if (client.readyState === WebSocket.OPEN && extendedClient.meetingId === message.meetingId) {
