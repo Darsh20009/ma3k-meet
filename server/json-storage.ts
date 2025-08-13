@@ -61,16 +61,30 @@ export class JSONStorage {
 
   // Meeting operations
   async createMeeting(insertMeeting: InsertMeeting): Promise<Meeting> {
+    const meetingCode = Math.random().toString().slice(2, 8); // Generate 6-digit code
     const meeting: Meeting = {
       id: randomUUID(),
       name: insertMeeting.name,
       type: insertMeeting.type || "اجتماع عمل",
+      meetingCode: meetingCode,
+      password: insertMeeting.password,
+      isPasswordProtected: !!insertMeeting.password,
+      maxParticipants: insertMeeting.maxParticipants || 100,
+      waitingRoom: insertMeeting.waitingRoom || false,
+      recordMeeting: insertMeeting.recordMeeting || false,
+      allowScreenShare: insertMeeting.allowScreenShare ?? true,
+      allowChat: insertMeeting.allowChat ?? true,
+      muteOnJoin: insertMeeting.muteOnJoin || false,
+      hostId: insertMeeting.hostId || randomUUID(),
       createdAt: new Date(),
       isActive: insertMeeting.isActive ?? true,
       settings: insertMeeting.settings || { 
         messageSpeed: "medium" as const, 
         conversationType: "friendly" as const, 
-        autoSounds: false 
+        autoSounds: false,
+        virtualParticipantsEnabled: true,
+        backgroundEffects: true,
+        reactionAnimations: true
       }
     };
     
@@ -82,6 +96,10 @@ export class JSONStorage {
 
   async getMeeting(id: string): Promise<Meeting | undefined> {
     return this.data.meetings.find(m => m.id === id);
+  }
+
+  async getMeetingByCode(meetingCode: string): Promise<Meeting | undefined> {
+    return this.data.meetings.find(m => m.meetingCode === meetingCode);
   }
 
   async getActiveMeetings(): Promise<Meeting[]> {

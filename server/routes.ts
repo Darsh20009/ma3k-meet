@@ -47,6 +47,63 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Join meeting with code and optional password
+  app.post("/api/meetings/join", async (req, res) => {
+    try {
+      const { meetingCode, password, userName } = req.body;
+      
+      if (!meetingCode || !userName) {
+        return res.status(400).json({ error: "Meeting code and user name are required" });
+      }
+
+      const meeting = await jsonStorage.getMeetingByCode(meetingCode);
+      if (!meeting) {
+        return res.status(404).json({ error: "Meeting not found" });
+      }
+
+      if (meeting.isPasswordProtected && meeting.password !== password) {
+        return res.status(403).json({ error: "Incorrect password" });
+      }
+
+      // Check if meeting is at capacity
+      const participants = await jsonStorage.getParticipants(meeting.id);
+      const realUsers = await jsonStorage.getRealUsers(meeting.id);
+      const totalCount = participants.length + realUsers.length;
+      
+      if (totalCount >= meeting.maxParticipants) {
+        return res.status(423).json({ error: "Meeting is at capacity" });
+      }
+
+      res.json({ 
+        meeting, 
+        canJoin: true, 
+        message: "Access granted" 
+      });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to join meeting" });
+    }
+  });
+
+  // Verify meeting password
+  app.post("/api/meetings/:id/verify-password", async (req, res) => {
+    try {
+      const { password } = req.body;
+      const meeting = await jsonStorage.getMeeting(req.params.id);
+      
+      if (!meeting) {
+        return res.status(404).json({ error: "Meeting not found" });
+      }
+
+      if (meeting.isPasswordProtected && meeting.password !== password) {
+        return res.status(403).json({ error: "Incorrect password" });
+      }
+
+      res.json({ verified: true });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to verify password" });
+    }
+  });
+
   // Enhanced session management
   app.get("/api/meetings/:id/session-users", async (req, res) => {
     try {
@@ -109,7 +166,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const user = await jsonStorage.addRealUser(userData);
       
       // Add user to meeting session
-      await jsonStorage.addUserToMeeting(userData.meetingId, user.id, userData.name);
+      if (userData.meetingId && user.id) {
+        await jsonStorage.addUserToMeeting(userData.meetingId, user.id, userData.name);
+      }
       
       res.json(user);
     } catch (error) {
@@ -151,7 +210,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Remove from session if user existed
-      if (userToDelete) {
+      if (userToDelete && userToDelete.meetingId) {
         await jsonStorage.removeUserFromMeeting(userToDelete.meetingId, req.params.id);
       }
       

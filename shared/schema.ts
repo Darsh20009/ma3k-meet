@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, timestamp, jsonb, boolean } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, timestamp, jsonb, boolean, integer } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -7,16 +7,32 @@ export const meetings = pgTable("meetings", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   name: text("name").notNull(),
   type: text("type").notNull().default("اجتماع عمل"),
+  meetingCode: varchar("meeting_code", { length: 6 }).notNull().unique(),
+  password: text("password"), // Optional password for extra security
+  isPasswordProtected: boolean("is_password_protected").default(false),
+  maxParticipants: integer("max_participants").default(100),
+  waitingRoom: boolean("waiting_room").default(false),
+  recordMeeting: boolean("record_meeting").default(false),
+  allowScreenShare: boolean("allow_screen_share").default(true),
+  allowChat: boolean("allow_chat").default(true),
+  muteOnJoin: boolean("mute_on_join").default(false),
+  hostId: varchar("host_id").notNull(),
   createdAt: timestamp("created_at").defaultNow(),
   isActive: boolean("is_active").default(true),
   settings: jsonb("settings").$type<{
     messageSpeed: "slow" | "medium" | "fast";
     conversationType: "formal" | "friendly" | "technical";
     autoSounds: boolean;
+    virtualParticipantsEnabled: boolean;
+    backgroundEffects: boolean;
+    reactionAnimations: boolean;
   }>().default({
     messageSpeed: "medium",
     conversationType: "friendly",
-    autoSounds: false
+    autoSounds: false,
+    virtualParticipantsEnabled: true,
+    backgroundEffects: true,
+    reactionAnimations: true
   })
 });
 
@@ -73,9 +89,14 @@ export const insertMessageSchema = createInsertSchema(chatMessages).omit({
 });
 
 export type InsertMeeting = z.infer<typeof insertMeetingSchema>;
-export type Meeting = typeof meetings.$inferSelect;
 export type InsertParticipant = z.infer<typeof insertParticipantSchema>;
+export type InsertUser = z.infer<typeof insertUserSchema>;
+export type InsertMessage = z.infer<typeof insertMessageSchema>;
+
+export type Meeting = typeof meetings.$inferSelect;
 export type VirtualParticipant = typeof virtualParticipants.$inferSelect;
+export type RealUser = typeof realUsers.$inferSelect;
+export type ChatMessage = typeof chatMessages.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type RealUser = typeof realUsers.$inferSelect;
 export type InsertMessage = z.infer<typeof insertMessageSchema>;
