@@ -2,6 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
 import { storage } from "./storage";
+import { jsonStorage } from "./json-storage";
 import { insertMeetingSchema, insertParticipantSchema, insertUserSchema, insertMessageSchema } from "@shared/schema";
 import { z } from "zod";
 
@@ -14,11 +15,11 @@ interface ExtendedWebSocket extends WebSocket {
 export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
 
-  // Meeting routes
+  // Meeting routes - Using JSON Storage
   app.post("/api/meetings", async (req, res) => {
     try {
       const meetingData = insertMeetingSchema.parse(req.body);
-      const meeting = await storage.createMeeting(meetingData);
+      const meeting = await jsonStorage.createMeeting(meetingData);
       res.json(meeting);
     } catch (error) {
       res.status(400).json({ error: "Invalid meeting data" });
@@ -27,7 +28,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/meetings", async (req, res) => {
     try {
-      const meetings = await storage.getActiveMeetings();
+      const meetings = await jsonStorage.getActiveMeetings();
       res.json(meetings);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch meetings" });
@@ -36,7 +37,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/meetings/:id", async (req, res) => {
     try {
-      const meeting = await storage.getMeeting(req.params.id);
+      const meeting = await jsonStorage.getMeeting(req.params.id);
       if (!meeting) {
         return res.status(404).json({ error: "Meeting not found" });
       }
@@ -46,10 +47,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Enhanced session management
+  app.get("/api/meetings/:id/session-users", async (req, res) => {
+    try {
+      const users = await jsonStorage.getActiveMeetingUsers(req.params.id);
+      res.json(users);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch session users" });
+    }
+  });
+
   app.put("/api/meetings/:id", async (req, res) => {
     try {
       const updates = req.body;
-      const meeting = await storage.updateMeeting(req.params.id, updates);
+      const meeting = await jsonStorage.updateMeeting(req.params.id, updates);
       if (!meeting) {
         return res.status(404).json({ error: "Meeting not found" });
       }
@@ -59,11 +70,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Participant routes
+  // Participant routes - JSON Storage
   app.post("/api/participants", async (req, res) => {
     try {
       const participantData = insertParticipantSchema.parse(req.body);
-      const participant = await storage.addParticipant(participantData);
+      const participant = await jsonStorage.addParticipant(participantData);
       res.json(participant);
     } catch (error) {
       res.status(400).json({ error: "Invalid participant data" });
@@ -72,7 +83,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/meetings/:meetingId/participants", async (req, res) => {
     try {
-      const participants = await storage.getParticipants(req.params.meetingId);
+      const participants = await jsonStorage.getParticipants(req.params.meetingId);
       res.json(participants);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch participants" });
@@ -81,7 +92,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.delete("/api/participants/:id", async (req, res) => {
     try {
-      const success = await storage.removeParticipant(req.params.id);
+      const success = await jsonStorage.removeParticipant(req.params.id);
       if (!success) {
         return res.status(404).json({ error: "Participant not found" });
       }
@@ -91,11 +102,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Real user routes
+  // Real user routes - JSON Storage with session tracking
   app.post("/api/users", async (req, res) => {
     try {
       const userData = insertUserSchema.parse(req.body);
-      const user = await storage.addRealUser(userData);
+      const user = await jsonStorage.addRealUser(userData);
+      
+      // Add user to meeting session
+      await jsonStorage.addUserToMeeting(userData.meetingId, user.id, userData.name);
+      
       res.json(user);
     } catch (error) {
       res.status(400).json({ error: "Invalid user data" });
@@ -104,7 +119,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/meetings/:meetingId/users", async (req, res) => {
     try {
-      const users = await storage.getRealUsers(req.params.meetingId);
+      const users = await jsonStorage.getRealUsers(req.params.meetingId);
       res.json(users);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch users" });
@@ -114,7 +129,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.put("/api/users/:id", async (req, res) => {
     try {
       const updates = req.body;
-      const user = await storage.updateRealUser(req.params.id, updates);
+      const user = await jsonStorage.updateRealUser(req.params.id, updates);
       if (!user) {
         return res.status(404).json({ error: "User not found" });
       }
@@ -126,20 +141,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.delete("/api/users/:id", async (req, res) => {
     try {
-      const success = await storage.removeRealUser(req.params.id);
+      // Get all users to find the one being deleted
+      const allUsers = await jsonStorage.getRealUsers('');
+      const userToDelete = allUsers.find(u => u.id === req.params.id);
+      
+      const success = await jsonStorage.removeRealUser(req.params.id);
       if (!success) {
         return res.status(404).json({ error: "User not found" });
       }
+      
+      // Remove from session if user existed
+      if (userToDelete) {
+        await jsonStorage.removeUserFromMeeting(userToDelete.meetingId, req.params.id);
+      }
+      
       res.json({ success: true });
     } catch (error) {
       res.status(500).json({ error: "Failed to remove user" });
     }
   });
 
-  // Chat routes
+  // Chat routes - JSON Storage
   app.get("/api/meetings/:meetingId/messages", async (req, res) => {
     try {
-      const messages = await storage.getMessages(req.params.meetingId);
+      const messages = await jsonStorage.getMessages(req.params.meetingId);
       res.json(messages);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch messages" });
@@ -149,7 +174,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/messages", async (req, res) => {
     try {
       const messageData = insertMessageSchema.parse(req.body);
-      const message = await storage.addMessage(messageData);
+      const message = await jsonStorage.addMessage(messageData);
       res.json(message);
     } catch (error) {
       res.status(400).json({ error: "Invalid message data" });

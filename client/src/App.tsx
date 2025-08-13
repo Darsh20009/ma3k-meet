@@ -9,6 +9,7 @@ import Home from "@/pages/home";
 import PersonalChat from "@/pages/personal-chat";
 import ChatManager from "@/pages/chat-manager";
 import JoinMeeting from "@/pages/join-meeting";
+import JoinSharedMeeting from "@/pages/join-shared-meeting";
 import JoinByCode from "@/pages/join-by-code";
 import NotFound from "@/pages/not-found";
 import AuthWrapper from "@/components/AuthWrapper";
@@ -26,6 +27,7 @@ function Router() {
       <Route path="/chat/:chatId" component={PersonalChat} />
       <Route path="/chats" component={ChatManager} />
       <Route path="/meeting/:meetingId" component={JoinMeeting} />
+      <Route path="/join/:meetingId" component={JoinSharedMeeting} />
       <Route path="/join" component={JoinByCode} />
       <Route component={NotFound} />
     </Switch>

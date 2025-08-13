@@ -31,6 +31,9 @@ export default function MeetingInterface({ meeting, onLeave }: MeetingInterfaceP
   const { toast } = useToast();
   
   const { isConnected, messages, realUsers, sendMessage, setMessages, setRealUsers } = useWebSocket(meeting.id);
+  
+  // Session users tracking for real-time collaboration
+  const [sessionUsers, setSessionUsers] = useState<{id: string, name: string, joinedAt: Date}[]>([]);
 
   // Meeting timer
   useEffect(() => {
@@ -66,6 +69,23 @@ export default function MeetingInterface({ meeting, onLeave }: MeetingInterfaceP
       }
     };
   }, []);
+
+  // Fetch meeting participants
+  const { data: participants = [] } = useQuery<VirtualParticipant[]>({
+    queryKey: [`/api/meetings/${meeting.id}/participants`],
+    enabled: isConnected
+  });
+
+  // Fetch session users for real-time collaboration
+  const { data: sessionUsersData = [] } = useQuery<{id: string, name: string, joinedAt: Date}[]>({
+    queryKey: [`/api/meetings/${meeting.id}/session-users`],
+    refetchInterval: 3000, // Refresh every 3 seconds
+    enabled: isConnected
+  });
+
+  useEffect(() => {
+    setSessionUsers(sessionUsersData);
+  }, [sessionUsersData]);
 
   const formatDuration = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);
@@ -231,7 +251,7 @@ export default function MeetingInterface({ meeting, onLeave }: MeetingInterfaceP
   };
 
   const shareInviteLink = async () => {
-    const shareUrl = `${window.location.origin}/meeting/${meeting.id}`;
+    const shareUrl = `${window.location.origin}/join/${meeting.id}`;
     
     console.log("Sharing meeting URL:", shareUrl);
     
@@ -240,7 +260,7 @@ export default function MeetingInterface({ meeting, onLeave }: MeetingInterfaceP
       await navigator.clipboard.writeText(shareUrl);
       toast({
         title: "تم النسخ",
-        description: `تم نسخ رابط الاجتماع: /meeting/${meeting.id}`,
+        description: `تم نسخ رابط الدعوة للاجتماع`,
       });
       return;
     } catch (err) {
