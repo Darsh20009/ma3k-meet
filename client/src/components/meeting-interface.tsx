@@ -421,33 +421,54 @@ export default function MeetingInterface({ meeting, onLeave }: MeetingInterfaceP
           />
         </div>
         
-        {/* Main Meeting Area */}
-        <main className="flex-1 flex flex-col bg-gray-900 relative">
+        {/* Enhanced Main Meeting Area */}
+        <main className="flex-1 flex flex-col bg-gradient-to-br from-slate-900 via-purple-900/50 to-slate-900 relative overflow-hidden">
+          {/* Background Pattern */}
+          <div className="absolute inset-0 opacity-10">
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 via-purple-600/20 to-pink-600/20 animate-pulse"></div>
+            <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse"></div>
+            <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-blue-500/10 rounded-full blur-3xl animate-pulse delay-75"></div>
+            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-pink-500/10 rounded-full blur-3xl animate-pulse delay-150"></div>
+          </div>
           
-          {/* Meeting Header */}
-          <div className="bg-gray-800 px-6 py-4 flex justify-between items-center">
+          {/* Enhanced Meeting Header */}
+          <div className="bg-gradient-to-r from-slate-800/90 via-purple-800/60 to-slate-800/90 backdrop-blur-lg border-b border-purple-700/30 px-6 py-4 flex justify-between items-center relative z-10">
             <div className="flex items-center space-x-reverse space-x-4">
               <div className="flex items-center">
-                <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse ml-2"></div>
-                <span className="text-white font-medium">جاري التسجيل</span>
+                <div className="relative">
+                  <div className="w-3 h-3 bg-gradient-to-r from-red-500 to-pink-500 rounded-full animate-pulse ml-2 shadow-lg shadow-red-500/50"></div>
+                  <div className="absolute inset-0 w-3 h-3 bg-red-400 rounded-full animate-ping"></div>
+                </div>
+                <span className="text-white font-medium bg-gradient-to-r from-white to-purple-200 bg-clip-text text-transparent">جاري البث المباشر</span>
               </div>
-              <span className="text-gray-300 text-sm">{meeting.name}</span>
+              <div className="bg-white/10 backdrop-blur-sm border border-white/20 px-3 py-1 rounded-lg">
+                <span className="text-purple-200 text-sm font-medium">{meeting.name}</span>
+              </div>
             </div>
             
-            <div className="flex items-center space-x-reverse space-x-2">
-              <span className="text-white text-sm bg-white/20 px-3 py-1 rounded">
-                <i className="fas fa-users ml-1"></i>
-                4 مشاركين
-              </span>
-              <span className="text-white text-sm">{formatDuration(meetingDuration)}</span>
+            <div className="flex items-center space-x-reverse space-x-3">
+              <div className="bg-gradient-to-r from-purple-600/20 to-pink-600/20 backdrop-blur-sm border border-purple-500/30 text-white text-sm px-4 py-2 rounded-full">
+                <i className="fas fa-users ml-2 text-purple-300"></i>
+                <span className="bg-gradient-to-r from-white to-purple-200 bg-clip-text text-transparent font-medium">4 مشاركين نشطين</span>
+              </div>
+              <div className="bg-gradient-to-r from-blue-600/20 to-purple-600/20 backdrop-blur-sm border border-blue-500/30 text-white text-sm px-4 py-2 rounded-full">
+                <i className="fas fa-clock ml-2 text-blue-300"></i>
+                <span className="bg-gradient-to-r from-white to-blue-200 bg-clip-text text-transparent font-medium">{formatDuration(meetingDuration)}</span>
+              </div>
             </div>
           </div>
           
-          {/* Video Grid Area - Responsive */}
-          <div className="flex-1 p-2 sm:p-6 video-grid meeting-active">
+          {/* Enhanced Video Grid Area - Responsive */}
+          <div className="flex-1 p-2 sm:p-6 video-grid meeting-active relative">
             
-            {/* Main Speaker (User) */}
-            <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl relative glass-effect p-4 col-span-full h-40 sm:h-56 lg:h-64 mb-3 sm:mb-4">
+            {/* Enhanced Main Speaker (User) */}
+            <div className="bg-gradient-to-br from-slate-800/80 via-purple-900/40 to-slate-800/80 rounded-xl relative backdrop-blur-lg border border-purple-700/30 p-4 col-span-full h-40 sm:h-56 lg:h-64 mb-3 sm:mb-4 shadow-2xl shadow-purple-900/20 overflow-hidden">
+              {/* Speaker Background Pattern */}
+              <div className="absolute inset-0 opacity-20">
+                <div className="absolute inset-0 bg-gradient-to-br from-purple-600/20 via-transparent to-pink-600/20"></div>
+                <div className="absolute top-1/4 right-1/4 w-32 h-32 bg-purple-500/10 rounded-full blur-2xl animate-pulse"></div>
+                <div className="absolute bottom-1/4 left-1/4 w-40 h-40 bg-blue-500/10 rounded-full blur-2xl animate-pulse delay-75"></div>
+              </div>
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="text-center">
                   {(() => {
@@ -455,11 +476,15 @@ export default function MeetingInterface({ meeting, onLeave }: MeetingInterfaceP
                     const userAvatar = userName.slice(0, 2);
                     return (
                       <>
-                        <div className="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 bg-gradient-to-br from-primary to-blue-600 rounded-full mx-auto flex items-center justify-center text-white text-lg sm:text-xl lg:text-2xl font-bold mb-3 participant-avatar">
-                          {userAvatar}
+                        <div className="relative group">
+                          <div className="absolute -inset-2 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full blur opacity-75 group-hover:opacity-100 transition duration-300 animate-pulse"></div>
+                          <div className="relative w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 bg-gradient-to-br from-purple-600 via-blue-600 to-pink-600 rounded-full mx-auto flex items-center justify-center text-white text-lg sm:text-xl lg:text-2xl font-bold mb-3 participant-avatar shadow-2xl">
+                            {userAvatar}
+                          </div>
                         </div>
-                        <h3 className="text-white font-semibold text-sm sm:text-base lg:text-lg">{userName} (أنت)</h3>
-                        <p className="text-gray-300 text-xs sm:text-sm">
+                        <h3 className="text-white font-bold text-sm sm:text-base lg:text-lg bg-gradient-to-r from-white via-purple-200 to-pink-200 bg-clip-text text-transparent">{userName} (أنت)</h3>
+                        <p className="text-purple-200 text-xs sm:text-sm font-medium">
+                          <i className={`fas ${isMicOn ? 'fa-microphone text-green-400' : 'fa-microphone-slash text-red-400'} ml-1`}></i>
                           {isMicOn ? 'يتحدث الآن' : 'صامت'}
                         </p>
                       </>
@@ -468,20 +493,25 @@ export default function MeetingInterface({ meeting, onLeave }: MeetingInterfaceP
                 </div>
               </div>
               <div className="absolute bottom-3 left-3 flex space-x-reverse space-x-2">
-                <div className={`p-1.5 sm:p-2 rounded-full ${isMicOn ? 'bg-success text-white status-online' : 'bg-gray-600 text-white'}`}>
+                <div className={`p-1.5 sm:p-2 rounded-full backdrop-blur-sm border transition-all duration-300 ${
+                  isMicOn 
+                    ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white border-green-400/50 shadow-lg shadow-green-500/30' 
+                    : 'bg-gradient-to-r from-red-500 to-pink-500 text-white border-red-400/50 shadow-lg shadow-red-500/30'
+                }`}>
                   <i className={`fas ${isMicOn ? 'fa-microphone' : 'fa-microphone-slash'} text-xs sm:text-sm`}></i>
                 </div>
                 {isVideoOn && (
-                  <div className="bg-success text-white p-1.5 sm:p-2 rounded-full status-online">
+                  <div className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white p-1.5 sm:p-2 rounded-full backdrop-blur-sm border border-blue-400/50 shadow-lg shadow-blue-500/30">
                     <i className="fas fa-video text-xs sm:text-sm"></i>
                   </div>
                 )}
               </div>
-              <div className="absolute top-3 left-3 bg-black/30 text-white px-2 py-1 rounded text-xs sm:text-sm backdrop-blur-sm">
+              <div className="absolute top-3 left-3 bg-gradient-to-r from-black/50 to-purple-900/50 text-white px-3 py-1.5 rounded-lg text-xs sm:text-sm backdrop-blur-sm border border-white/20">
+                <i className="fas fa-user ml-1 text-purple-300"></i>
                 {localStorage.getItem('userName') || 'أنت'}
               </div>
               {isScreenSharing && (
-                <div className="absolute top-3 right-3 bg-blue-500 text-white px-2 py-1 rounded text-xs sm:text-sm status-online">
+                <div className="absolute top-3 right-3 bg-gradient-to-r from-blue-500 to-purple-500 text-white px-3 py-1.5 rounded-lg text-xs sm:text-sm backdrop-blur-sm border border-blue-400/50 shadow-lg shadow-blue-500/30">
                   <i className="fas fa-desktop ml-1"></i>
                   مشاركة الشاشة
                 </div>
@@ -505,32 +535,52 @@ export default function MeetingInterface({ meeting, onLeave }: MeetingInterfaceP
                 return (
                   <div 
                     key={participant.id} 
-                    className="bg-gray-700 rounded-xl relative p-4 participant-card"
+                    className="bg-gradient-to-br from-slate-800/80 via-purple-900/40 to-slate-800/80 rounded-xl relative p-4 participant-card backdrop-blur-lg border border-purple-700/30 shadow-xl shadow-purple-900/20 hover:shadow-purple-800/30 transition-all duration-300 cursor-pointer overflow-hidden"
                     onClick={() => {
                       // Future: Implement participant focus/zoom
                     }}
                   >
-                    <div className="absolute inset-0 flex items-center justify-center">
+                    {/* Participant Background Pattern */}
+                    <div className="absolute inset-0 opacity-20">
+                      <div className={`absolute inset-0 bg-gradient-to-br ${colors[index % colors.length].replace('from-', 'from-').replace('to-', 'to-')}/20`}></div>
+                      <div className="absolute top-0 right-0 w-20 h-20 bg-purple-500/10 rounded-full blur-xl animate-pulse"></div>
+                      <div className="absolute bottom-0 left-0 w-16 h-16 bg-blue-500/10 rounded-full blur-xl animate-pulse delay-75"></div>
+                    </div>
+                    
+                    <div className="absolute inset-0 flex items-center justify-center relative">
                       <div className="text-center">
-                        <div className={`w-16 h-16 bg-gradient-to-br ${colors[index % colors.length]} rounded-full mx-auto flex items-center justify-center text-white font-bold mb-2`}>
-                          {participant.avatar}
+                        <div className="relative group">
+                          <div className={`absolute -inset-1 bg-gradient-to-r ${colors[index % colors.length]} rounded-full blur opacity-75 group-hover:opacity-100 transition duration-300 animate-pulse`}></div>
+                          <div className={`relative w-16 h-16 bg-gradient-to-br ${colors[index % colors.length]} rounded-full mx-auto flex items-center justify-center text-white font-bold mb-2 shadow-2xl`}>
+                            {participant.avatar}
+                          </div>
                         </div>
-                        <h4 className="text-white font-medium">{participant.name}</h4>
-                        <span className={`text-xs px-2 py-1 rounded-full mt-1 inline-block ${
-                          participant.status === 'active' ? 'bg-success/20 text-success' :
-                          participant.status === 'away' ? 'bg-warning/20 text-warning' :
-                          'bg-gray-600 text-gray-300'
+                        <h4 className="text-white font-bold bg-gradient-to-r from-white via-purple-200 to-pink-200 bg-clip-text text-transparent">{participant.name}</h4>
+                        <span className={`text-xs px-3 py-1.5 rounded-full mt-2 inline-block backdrop-blur-sm border transition-all duration-300 ${
+                          participant.status === 'active' 
+                            ? 'bg-gradient-to-r from-emerald-500/20 to-green-500/20 text-emerald-300 border-emerald-500/40 shadow-sm' :
+                          participant.status === 'away' 
+                            ? 'bg-gradient-to-r from-yellow-500/20 to-orange-500/20 text-yellow-300 border-yellow-500/40 shadow-sm' :
+                            'bg-gradient-to-r from-gray-600/20 to-gray-500/20 text-gray-300 border-gray-500/40'
                         }`}>
+                          <i className={`fas ${
+                            participant.status === 'active' ? 'fa-circle text-green-400' :
+                            participant.status === 'away' ? 'fa-clock text-yellow-400' :
+                            'fa-circle-dot text-gray-400'
+                          } ml-1 text-xs animate-pulse`}></i>
                           {participant.status === 'active' ? 'نشط' :
                            participant.status === 'away' ? 'بعيد' : 'غير متصل'}
                         </span>
                       </div>
                     </div>
-                    <div className="absolute top-3 left-3 bg-white/20 text-white px-2 py-1 rounded text-xs">
+                    <div className="absolute top-3 left-3 bg-gradient-to-r from-black/50 to-purple-900/50 text-white px-3 py-1.5 rounded-lg text-xs backdrop-blur-sm border border-white/20">
+                      <i className="fas fa-user ml-1 text-purple-300"></i>
                       {participant.name}
                     </div>
-                    <div className={`absolute bottom-3 left-3 p-1 rounded-full ${
-                      participant.status === 'active' ? 'bg-success text-white' : 'bg-gray-600 text-white'
+                    <div className={`absolute bottom-3 left-3 p-2 rounded-full backdrop-blur-sm border transition-all duration-300 ${
+                      participant.status === 'active' 
+                        ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white border-green-400/50 shadow-lg shadow-green-500/30' 
+                        : 'bg-gradient-to-r from-red-500 to-pink-500 text-white border-red-400/50 shadow-lg shadow-red-500/30'
                     }`}>
                       <i className={`fas ${participant.status === 'active' ? 'fa-microphone' : 'fa-microphone-slash'} text-xs`}></i>
                     </div>
@@ -541,99 +591,98 @@ export default function MeetingInterface({ meeting, onLeave }: MeetingInterfaceP
             
           </div>
           
-          {/* Meeting Controls - Mobile Responsive */}
-          <div className="bg-gradient-to-r from-gray-800 to-gray-900 px-3 sm:px-6 py-4 sm:py-6 border-t border-gray-700">
+          {/* Enhanced Meeting Controls - Mobile Responsive */}
+          <div className="bg-gradient-to-r from-slate-800/90 via-purple-800/60 to-slate-800/90 backdrop-blur-lg border-t border-purple-700/30 px-3 sm:px-6 py-4 sm:py-6 relative overflow-hidden">
+            {/* Controls Background Pattern */}
+            <div className="absolute inset-0 opacity-10">
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 via-purple-600/20 to-pink-600/20"></div>
+              <div className="absolute top-1/2 left-1/4 w-32 h-32 bg-purple-500/10 rounded-full blur-2xl"></div>
+              <div className="absolute top-1/2 right-1/4 w-40 h-40 bg-blue-500/10 rounded-full blur-2xl"></div>
+            </div>
             
-            {/* Desktop Layout */}
-            <div className="hidden sm:flex items-center justify-center space-x-reverse space-x-6">
+            {/* Enhanced Desktop Layout */}
+            <div className="hidden sm:flex items-center justify-center space-x-reverse space-x-6 relative">
               
-              {/* Primary Controls */}
-              <div className="flex items-center space-x-reverse space-x-3 glass-effect rounded-full px-4 py-2">
+              {/* Enhanced Primary Controls */}
+              <div className="flex items-center space-x-reverse space-x-3 bg-gradient-to-r from-white/10 to-purple-900/20 backdrop-blur-lg rounded-full px-6 py-3 border border-purple-700/30 shadow-xl shadow-purple-900/20">
                 <div className="relative group">
                   <Button
                     onClick={toggleMicrophone}
-                    className={`w-12 h-12 rounded-full control-button transition-all duration-300 transform hover:scale-110 ${
+                    className={`w-14 h-14 rounded-full control-button transition-all duration-300 transform hover:scale-110 backdrop-blur-sm border ${
                       isMicOn 
-                        ? 'bg-success hover:bg-success/90 text-white shadow-lg shadow-success/30 status-online' 
-                        : 'bg-red-500 hover:bg-red-600 text-white shadow-lg shadow-red-500/30 status-busy'
+                        ? 'bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-400 hover:to-emerald-400 text-white shadow-xl shadow-green-500/40 border-green-400/50' 
+                        : 'bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-400 hover:to-pink-400 text-white shadow-xl shadow-red-500/40 border-red-400/50'
                     }`}
                   >
                     <i className={`fas ${isMicOn ? 'fa-microphone' : 'fa-microphone-slash'} text-lg`}></i>
                   </Button>
-
                 </div>
 
                 <div className="relative group">
                   <Button
                     onClick={toggleVideo}
-                    className={`w-12 h-12 rounded-full control-button transition-all duration-300 transform hover:scale-110 ${
+                    className={`w-14 h-14 rounded-full control-button transition-all duration-300 transform hover:scale-110 backdrop-blur-sm border ${
                       isVideoOn
-                        ? 'bg-success hover:bg-success/90 text-white shadow-lg shadow-success/30 status-online'
-                        : 'bg-gray-600 hover:bg-gray-500 text-white shadow-lg shadow-gray-600/30'
+                        ? 'bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-400 hover:to-cyan-400 text-white shadow-xl shadow-blue-500/40 border-blue-400/50'
+                        : 'bg-gradient-to-r from-gray-600 to-gray-500 hover:from-gray-500 hover:to-gray-400 text-white shadow-lg shadow-gray-600/30 border-gray-500/50'
                     }`}
                   >
                     <i className={`fas ${isVideoOn ? 'fa-video' : 'fa-video-slash'} text-lg`}></i>
                   </Button>
-
                 </div>
 
                 <div className="relative group">
                   <Button
                     onClick={toggleScreenShare}
-                    className={`w-12 h-12 rounded-full control-button transition-all duration-300 transform hover:scale-110 ${
+                    className={`w-14 h-14 rounded-full control-button transition-all duration-300 transform hover:scale-110 backdrop-blur-sm border ${
                       isScreenSharing
-                        ? 'bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/30 status-online'
-                        : 'bg-gray-600 hover:bg-gray-500 text-white shadow-lg shadow-gray-600/30'
+                        ? 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white shadow-xl shadow-purple-600/40 border-purple-400/50'
+                        : 'bg-gradient-to-r from-gray-600 to-gray-500 hover:from-gray-500 hover:to-gray-400 text-white shadow-lg shadow-gray-600/30 border-gray-500/50'
                     }`}
                   >
                     <i className={`fas fa-desktop text-lg`}></i>
                   </Button>
-
                 </div>
               </div>
 
-              {/* Secondary Controls */}
+              {/* Enhanced Secondary Controls */}
               <div className="flex items-center space-x-reverse space-x-3">
                 <div className="relative group">
                   <Button
                     onClick={toggleParticipants}
-                    className="w-11 h-11 bg-gray-700 hover:bg-gray-600 text-white rounded-full transition-all duration-300 transform hover:scale-110"
+                    className="w-12 h-12 bg-gradient-to-r from-slate-600/80 to-purple-600/60 hover:from-slate-500/80 hover:to-purple-500/60 text-white rounded-full transition-all duration-300 transform hover:scale-110 backdrop-blur-sm border border-purple-600/30 shadow-lg shadow-purple-600/20"
                   >
                     <i className="fas fa-users text-sm"></i>
                   </Button>
-
                 </div>
 
                 <div className="relative group">
                   <Button
                     onClick={shareInviteLink}
-                    className="w-11 h-11 bg-blue-600 hover:bg-blue-500 text-white rounded-full transition-all duration-300 transform hover:scale-110 shadow-lg shadow-blue-600/20"
+                    className="w-12 h-12 bg-gradient-to-r from-blue-600/80 to-purple-600/60 hover:from-blue-500/80 hover:to-purple-500/60 text-white rounded-full transition-all duration-300 transform hover:scale-110 backdrop-blur-sm border border-blue-600/30 shadow-lg shadow-blue-600/20"
                   >
                     <i className="fas fa-share text-sm"></i>
                   </Button>
-
                 </div>
 
                 <div className="relative group">
                   <Button
                     onClick={toggleFullscreen}
-                    className="w-11 h-11 bg-purple-600 hover:bg-purple-500 text-white rounded-full transition-all duration-300 transform hover:scale-110 shadow-lg shadow-purple-600/20"
+                    className="w-12 h-12 bg-gradient-to-r from-purple-600/80 to-pink-600/60 hover:from-purple-500/80 hover:to-pink-500/60 text-white rounded-full transition-all duration-300 transform hover:scale-110 backdrop-blur-sm border border-purple-600/30 shadow-lg shadow-purple-600/20"
                   >
                     <i className={`fas ${isFullscreen ? 'fa-compress' : 'fa-expand'} text-sm`}></i>
                   </Button>
-
                 </div>
               </div>
 
-              {/* Leave Button */}
+              {/* Enhanced Leave Button */}
               <div className="relative group">
                 <Button
                   onClick={onLeave}
-                  className="w-12 h-12 bg-danger hover:bg-danger/90 text-white rounded-full transition-all duration-300 transform hover:scale-110 shadow-lg shadow-red-500/30"
+                  className="w-14 h-14 bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-400 hover:to-pink-400 text-white rounded-full transition-all duration-300 transform hover:scale-110 backdrop-blur-sm border border-red-400/50 shadow-xl shadow-red-500/40"
                 >
                   <i className="fas fa-phone-slash text-lg"></i>
                 </Button>
-
               </div>
             </div>
 

@@ -197,24 +197,38 @@ export default function ChatSidebar({ meeting, messages, onSendMessage, setMessa
   };
 
   return (
-    <aside className="w-full sm:w-80 lg:w-96 bg-white border-l border-gray-200 flex flex-col h-full">
+    <aside className="w-full sm:w-80 lg:w-96 bg-gradient-to-br from-slate-50 via-purple-50/30 to-pink-50/20 border-l border-purple-200/40 flex flex-col h-full backdrop-blur-lg">
       
-      {/* Chat Header */}
-      <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-100">
-        <div className="flex justify-between items-center mb-2">
-          <h3 className="font-semibold text-gray-800 text-sm sm:text-base">محادثة الاجتماع</h3>
+      {/* Enhanced Chat Header */}
+      <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-purple-200/30 bg-gradient-to-r from-white/80 via-purple-50/50 to-pink-50/30 backdrop-blur-sm relative">
+        {/* Background Pattern */}
+        <div className="absolute inset-0 opacity-5">
+          <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 via-purple-600/10 to-pink-600/10"></div>
+          <div className="absolute top-0 left-1/4 w-20 h-20 bg-purple-500/5 rounded-full blur-2xl"></div>
+          <div className="absolute top-0 right-1/4 w-24 h-24 bg-blue-500/5 rounded-full blur-2xl"></div>
+        </div>
+        
+        <div className="flex justify-between items-center mb-2 relative">
+          <div className="flex items-center">
+            <div className="w-8 h-8 bg-gradient-to-br from-purple-600 to-pink-600 rounded-lg flex items-center justify-center text-white mr-2 shadow-lg">
+              <i className="fas fa-comments text-sm"></i>
+            </div>
+            <h3 className="font-bold text-sm sm:text-base bg-gradient-to-r from-gray-800 via-purple-700 to-pink-700 bg-clip-text text-transparent">محادثة الاجتماع المباشرة</h3>
+          </div>
           <div className="flex items-center space-x-reverse space-x-1 sm:space-x-2">
             <Button
               onClick={downloadConversation}
               variant="ghost"
               size="sm"
-              className="h-7 w-7 sm:h-8 sm:w-8 p-0 glass-effect hover:bg-blue-50"
+              className="h-7 w-7 sm:h-8 sm:w-8 p-0 glass-effect hover:bg-purple-50 border border-purple-200/30 transition-all duration-300"
               title="تحميل المحادثة"
             >
-              <i className="fas fa-download text-xs sm:text-sm text-blue-600"></i>
+              <i className="fas fa-download text-xs sm:text-sm text-purple-600"></i>
             </Button>
-            <span className={`text-xs px-2 py-1 rounded ${
-              isAutoEnabled ? 'text-green-600 bg-green-100' : 'text-gray-500 bg-gray-100'
+            <span className={`text-xs px-2 py-1 rounded-full backdrop-blur-sm border transition-all duration-300 ${
+              isAutoEnabled 
+                ? 'text-emerald-700 bg-emerald-100/80 border-emerald-300/40 shadow-sm' 
+                : 'text-gray-600 bg-gray-100/80 border-gray-300/40'
             }`}>
               {isAutoEnabled ? 'تلقائي' : 'معطل'}
             </span>
@@ -222,27 +236,33 @@ export default function ChatSidebar({ meeting, messages, onSendMessage, setMessa
               onClick={toggleAutoChat}
               variant="ghost"
               size="sm"
-              className="h-7 w-7 sm:h-8 sm:w-8 p-0 control-button"
+              className={`h-7 w-7 sm:h-8 sm:w-8 p-0 control-button transition-all duration-300 border ${
+                isAutoEnabled 
+                  ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white border-purple-500 shadow-lg shadow-purple-600/30' 
+                  : 'border-gray-300/50 hover:bg-gray-50'
+              }`}
             >
               <i className={`fas ${isAutoEnabled ? 'fa-pause' : 'fa-play'} text-xs sm:text-sm`}></i>
             </Button>
           </div>
         </div>
-        <div className="text-xs text-gray-500">
-          {allMessages.length} رسالة • {participants.length} مشارك
+        <div className="text-xs text-gray-600/80 bg-white/50 px-3 py-1 rounded-full inline-block backdrop-blur-sm border border-purple-200/30 relative">
+          <i className="fas fa-message ml-1 text-purple-600"></i>
+          {allMessages.length} رسالة • {participants.length} مشارك نشط
         </div>
       </div>
       
-      {/* Chat Messages */}
+      {/* Enhanced Chat Messages */}
       <div 
         ref={chatContainerRef}
-        className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3 sm:space-y-4 chat-container"
+        className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3 sm:space-y-4 chat-container bg-gradient-to-b from-transparent via-white/30 to-transparent"
       >
         
-        {/* System Message */}
+        {/* Enhanced System Message */}
         <div className="text-center">
-          <span className="text-xs text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
-            بدأ الاجتماع
+          <span className="text-xs text-purple-700 bg-gradient-to-r from-purple-100/80 to-pink-100/80 px-4 py-2 rounded-full backdrop-blur-sm border border-purple-200/40 shadow-sm">
+            <i className="fas fa-play-circle ml-1"></i>
+            بدأ الاجتماع المباشر
           </span>
         </div>
         
@@ -251,26 +271,29 @@ export default function ChatSidebar({ meeting, messages, onSendMessage, setMessa
           <div key={message.id} className="chat-message">
             {message.isSystemMessage ? (
               <div className="text-center">
-                <span className="text-xs text-blue-600 bg-blue-50 px-3 py-1 rounded-full">
+                <span className="text-xs text-blue-700 bg-gradient-to-r from-blue-100/80 to-cyan-100/80 px-4 py-2 rounded-full backdrop-blur-sm border border-blue-200/40 shadow-sm">
                   <i className="fas fa-info-circle ml-1"></i>
                   {message.message}
                 </span>
               </div>
             ) : (
-              <div className="flex items-start space-x-reverse space-x-2 sm:space-x-3">
-                <div className="w-7 h-7 sm:w-8 sm:h-8 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white text-xs font-medium participant-avatar">
-                  {message.senderAvatar || message.senderName.slice(0, 2)}
+              <div className="flex items-start space-x-reverse space-x-2 sm:space-x-3 hover:bg-white/50 rounded-xl p-2 -m-2 transition-all duration-300">
+                <div className="relative group">
+                  <div className="absolute -inset-0.5 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full blur opacity-20 group-hover:opacity-40 transition duration-300"></div>
+                  <div className="relative w-7 h-7 sm:w-8 sm:h-8 bg-gradient-to-br from-purple-500 via-blue-500 to-pink-500 rounded-full flex items-center justify-center text-white text-xs font-medium participant-avatar shadow-lg">
+                    {message.senderAvatar || message.senderName.slice(0, 2)}
+                  </div>
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center space-x-reverse space-x-2 mb-1">
-                    <span className="text-xs sm:text-sm font-medium text-gray-800 truncate">
+                    <span className="text-xs sm:text-sm font-medium bg-gradient-to-r from-gray-800 to-purple-700 bg-clip-text text-transparent truncate">
                       {message.senderName}
                     </span>
                     <span className="text-xs text-gray-500 flex-shrink-0">
                       {formatTime(message.timestamp)}
                     </span>
                   </div>
-                  <div className="bg-gray-100 rounded-lg p-2 sm:p-3 text-sm text-gray-800 hover:bg-gray-50 transition-colors chat-message">
+                  <div className="bg-gradient-to-br from-white/90 to-purple-50/60 rounded-lg p-2 sm:p-3 text-sm text-gray-800 hover:from-white hover:to-purple-50/80 transition-all duration-300 chat-message shadow-sm border border-purple-100/30 backdrop-blur-sm">
                     {message.message}
                   </div>
                 </div>
@@ -293,39 +316,51 @@ export default function ChatSidebar({ meeting, messages, onSendMessage, setMessa
         
       </div>
       
-      {/* Chat Input */}
-      <div className="p-3 sm:p-4 border-t border-gray-100">
-        <div className="flex space-x-reverse space-x-2">
+      {/* Enhanced Chat Input */}
+      <div className="p-3 sm:p-4 border-t border-purple-200/30 bg-gradient-to-r from-white/80 via-purple-50/50 to-pink-50/30 backdrop-blur-sm relative">
+        {/* Background Pattern */}
+        <div className="absolute inset-0 opacity-5">
+          <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 via-purple-600/10 to-pink-600/10"></div>
+        </div>
+        
+        <div className="flex space-x-reverse space-x-2 relative">
           <Input
             type="text"
             placeholder="اكتب رسالتك هنا..."
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
             onKeyPress={handleKeyPress}
-            className="flex-1 chat-input text-sm sm:text-base"
+            className="flex-1 chat-input text-sm sm:text-base bg-white/90 border-purple-200/40 focus:border-purple-400/60 focus:ring-purple-400/30 backdrop-blur-sm shadow-sm"
           />
           <Button 
             onClick={sendMessage}
             disabled={!newMessage.trim()}
-            className="bg-primary hover:bg-primary/90 text-white px-3 sm:px-4 control-button min-h-[44px] sm:min-h-[40px]"
+            className={`px-3 sm:px-4 control-button min-h-[44px] sm:min-h-[40px] transition-all duration-300 ${
+              newMessage.trim() 
+                ? 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white shadow-lg shadow-purple-600/30' 
+                : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+            }`}
           >
             <i className="fas fa-paper-plane text-sm"></i>
           </Button>
         </div>
         
-        <div className="flex justify-between items-center mt-3">
-          <div className="flex items-center space-x-reverse space-x-4 text-sm text-gray-500">
-            <button className="hover:text-primary">
+        <div className="flex justify-between items-center mt-3 relative">
+          <div className="flex items-center space-x-reverse space-x-4 text-sm">
+            <button className="text-purple-600 hover:text-purple-700 transition-colors duration-300 bg-white/50 px-2 py-1 rounded-lg hover:bg-white/80 backdrop-blur-sm border border-purple-200/30">
               <i className="fas fa-paperclip ml-1"></i>
               مرفق
             </button>
-            <button className="hover:text-primary">
+            <button className="text-purple-600 hover:text-purple-700 transition-colors duration-300 bg-white/50 px-2 py-1 rounded-lg hover:bg-white/80 backdrop-blur-sm border border-purple-200/30">
               <i className="fas fa-smile ml-1"></i>
               رموز
             </button>
           </div>
-          <div className="text-xs text-gray-400">
-            {isAutoEnabled ? 'يتم تشغيل الرسائل التلقائية' : 'الرسائل التلقائية معطلة'}
+          <div className="text-xs bg-white/60 px-3 py-1 rounded-full backdrop-blur-sm border border-purple-200/30">
+            <i className={`fas ${isAutoEnabled ? 'fa-robot text-emerald-600' : 'fa-pause text-gray-600'} ml-1`}></i>
+            <span className={isAutoEnabled ? 'text-emerald-700' : 'text-gray-600'}>
+              {isAutoEnabled ? 'الرسائل التلقائية نشطة' : 'الرسائل التلقائية معطلة'}
+            </span>
           </div>
         </div>
       </div>
