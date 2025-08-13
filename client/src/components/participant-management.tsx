@@ -428,8 +428,14 @@ export default function ParticipantManagement({ meeting, realUsers = [] }: Parti
               <i className="fas fa-tachometer-alt ml-2 text-purple-600"></i>
               سرعة الرسائل
             </span>
-            <Select defaultValue={meeting.settings?.messageSpeed || 'medium'}>
-              <SelectTrigger className="w-24 h-8 text-xs bg-gradient-to-r from-white to-purple-50 border border-purple-200/50">
+            <Select 
+              defaultValue={meeting.settings?.messageSpeed || 'medium'}
+              onValueChange={(value) => {
+                console.log('Message speed changed:', value);
+                // Here you can add logic to update meeting settings
+              }}
+            >
+              <SelectTrigger className="w-24 h-8 text-xs bg-gradient-to-r from-white to-purple-50 border border-purple-200/50 hover:border-purple-300/60 transition-colors duration-200">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -445,8 +451,14 @@ export default function ParticipantManagement({ meeting, realUsers = [] }: Parti
               <i className="fas fa-comments ml-2 text-purple-600"></i>
               نوع المحادثات
             </span>
-            <Select defaultValue={meeting.settings?.conversationType || 'friendly'}>
-              <SelectTrigger className="w-24 h-8 text-xs bg-gradient-to-r from-white to-purple-50 border border-purple-200/50">
+            <Select 
+              defaultValue={meeting.settings?.conversationType || 'friendly'}
+              onValueChange={(value) => {
+                console.log('Conversation type changed:', value);
+                // Here you can add logic to update meeting settings
+              }}
+            >
+              <SelectTrigger className="w-24 h-8 text-xs bg-gradient-to-r from-white to-purple-50 border border-purple-200/50 hover:border-purple-300/60 transition-colors duration-200">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -462,14 +474,19 @@ export default function ParticipantManagement({ meeting, realUsers = [] }: Parti
               <i className="fas fa-volume-up ml-2 text-purple-600"></i>
               أصوات وهمية
             </span>
-            <div className="relative">
+            <label htmlFor="autoSounds" className="relative cursor-pointer">
               <input 
+                id="autoSounds"
                 type="checkbox" 
                 defaultChecked={meeting.settings?.autoSounds || false}
                 className="sr-only peer"
+                onChange={(e) => {
+                  // Here you can add logic to update meeting settings
+                  console.log('Auto sounds toggled:', e.target.checked);
+                }}
               />
-              <div className="w-11 h-6 bg-gradient-to-r from-gray-200 to-purple-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-purple-500/50 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all after:shadow-lg peer-checked:bg-gradient-to-r peer-checked:from-purple-500 peer-checked:to-pink-500"></div>
-            </div>
+              <div className="w-11 h-6 bg-gradient-to-r from-gray-200 to-purple-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-purple-500/50 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all after:shadow-lg peer-checked:bg-gradient-to-r peer-checked:from-purple-500 peer-checked:to-pink-500 hover:shadow-md transition-shadow duration-200"></div>
+            </label>
           </div>
         </div>
       </div>
