@@ -1,83 +1,63 @@
-import { writeFileSync, readFileSync, existsSync } from "fs";
-import { randomUUID } from "crypto";
-import type { Meeting, InsertMeeting, VirtualParticipant, InsertParticipant, RealUser, InsertUser, ChatMessage, InsertMessage } from "@shared/schema";
+import { readFileSync, writeFileSync, existsSync } from 'fs';
+import { randomUUID } from 'crypto';
+import type { InsertMeeting, Meeting, InsertParticipant, VirtualParticipant, InsertUser, RealUser, InsertMessage, ChatMessage } from '@shared/schema';
 
-interface StorageData {
+interface Data {
   meetings: Meeting[];
   participants: VirtualParticipant[];
   realUsers: RealUser[];
   messages: ChatMessage[];
-  activeSessions: { [meetingId: string]: { [userId: string]: { name: string, joinedAt: string, isActive: boolean } } };
+  activeSessions: Record<string, Record<string, any>>;
 }
 
 export class JSONStorage {
-  private dataFile = './server/data.json';
-  private data: StorageData = {
-    meetings: [],
-    participants: [],
-    realUsers: [],
-    messages: [],
-    activeSessions: {}
-  };
+  private dataFile = 'server/data.json';
+  private data: Data;
 
   constructor() {
     this.loadData();
   }
 
-  private loadData() {
-    try {
-      if (existsSync(this.dataFile)) {
-        const rawData = readFileSync(this.dataFile, 'utf-8');
-        this.data = JSON.parse(rawData);
-      } else {
-        this.data = {
-          meetings: [],
-          participants: [],
-          realUsers: [],
-          messages: [],
-          activeSessions: {}
-        };
-        this.saveData();
+  private loadData(): void {
+    if (existsSync(this.dataFile)) {
+      try {
+        const fileContent = readFileSync(this.dataFile, 'utf8');
+        this.data = JSON.parse(fileContent);
+      } catch (error) {
+        console.error('Failed to load data, creating new:', error);
+        this.data = { meetings: [], participants: [], realUsers: [], messages: [], activeSessions: {} };
       }
-    } catch (error) {
-      console.error('Error loading data:', error);
-      this.data = {
-        meetings: [],
-        participants: [],
-        realUsers: [],
-        messages: [],
-        activeSessions: {}
-      };
+    } else {
+      this.data = { meetings: [], participants: [], realUsers: [], messages: [], activeSessions: {} };
     }
   }
 
-  private saveData() {
+  private saveData(): void {
     try {
-      writeFileSync(this.dataFile, JSON.stringify(this.data, null, 2));
+      writeFileSync(this.dataFile, JSON.stringify(this.data, null, 2), 'utf8');
     } catch (error) {
-      console.error('Error saving data:', error);
+      console.error('Failed to save data:', error);
     }
   }
 
   // Meeting operations
   async createMeeting(insertMeeting: InsertMeeting): Promise<Meeting> {
-    const meetingCode = Math.random().toString().slice(2, 8); // Generate 6-digit code
-    const meeting: Meeting = {
+    const meetingCode = insertMeeting.meetingCode || Math.random().toString().slice(2, 8);
+    
+    const newMeeting: Meeting = {
       id: randomUUID(),
       name: insertMeeting.name,
       type: insertMeeting.type || "اجتماع عمل",
       meetingCode: meetingCode,
+      hostId: insertMeeting.hostId || 'anonymous-host',
       password: insertMeeting.password || null,
       isPasswordProtected: !!insertMeeting.password,
       maxParticipants: insertMeeting.maxParticipants || 100,
       waitingRoom: insertMeeting.waitingRoom || false,
       recordMeeting: insertMeeting.recordMeeting || false,
-      allowScreenShare: insertMeeting.allowScreenShare ?? true,
-      allowChat: insertMeeting.allowChat ?? true,
+      allowScreenShare: insertMeeting.allowScreenShare !== undefined ? insertMeeting.allowScreenShare : true,
+      allowChat: insertMeeting.allowChat !== undefined ? insertMeeting.allowChat : true,
       muteOnJoin: insertMeeting.muteOnJoin || false,
-      hostId: insertMeeting.hostId || randomUUID(),
-      createdAt: new Date(),
-      isActive: insertMeeting.isActive ?? true,
       settings: insertMeeting.settings || { 
         messageSpeed: "medium" as const, 
         conversationType: "friendly" as const, 
@@ -85,25 +65,27 @@ export class JSONStorage {
         virtualParticipantsEnabled: true,
         backgroundEffects: true,
         reactionAnimations: true
-      }
+      },
+      createdAt: new Date()
     };
     
-    this.data.meetings.push(meeting);
-    this.data.activeSessions[meeting.id] = {};
+    this.data.meetings.push(newMeeting);
+    this.data.activeSessions[newMeeting.id] = {};
     this.saveData();
-    return meeting;
+    
+    return newMeeting;
   }
 
   async getMeeting(id: string): Promise<Meeting | undefined> {
     return this.data.meetings.find(m => m.id === id);
   }
 
-  async getMeetingByCode(meetingCode: string): Promise<Meeting | undefined> {
-    return this.data.meetings.find(m => m.meetingCode === meetingCode);
+  async getMeetingByCode(code: string): Promise<Meeting | undefined> {
+    return this.data.meetings.find(m => m.meetingCode === code);
   }
 
-  async getActiveMeetings(): Promise<Meeting[]> {
-    return this.data.meetings.filter(m => m.isActive);
+  async getAllMeetings(): Promise<Meeting[]> {
+    return this.data.meetings;
   }
 
   async updateMeeting(id: string, updates: Partial<Meeting>): Promise<Meeting | undefined> {
@@ -121,7 +103,6 @@ export class JSONStorage {
     
     this.data.meetings.splice(index, 1);
     delete this.data.activeSessions[id];
-    // Clean up related data
     this.data.participants = this.data.participants.filter(p => p.meetingId !== id);
     this.data.realUsers = this.data.realUsers.filter(u => u.meetingId !== id);
     this.data.messages = this.data.messages.filter(m => m.meetingId !== id);
@@ -133,11 +114,13 @@ export class JSONStorage {
   async addParticipant(participant: InsertParticipant): Promise<VirtualParticipant> {
     const newParticipant: VirtualParticipant = {
       id: randomUUID(),
-      meetingId: participant.meetingId,
+      meetingId: participant.meetingId || '',
       name: participant.name,
       avatar: participant.avatar,
       status: participant.status || 'active',
-      createdAt: new Date()
+      joinedAt: new Date(),
+      isOnline: participant.isOnline !== undefined ? participant.isOnline : true,
+      isHost: participant.isHost || false
     };
     
     this.data.participants.push(newParticipant);
@@ -171,24 +154,25 @@ export class JSONStorage {
   async addRealUser(user: InsertUser): Promise<RealUser> {
     const newUser: RealUser = {
       id: randomUUID(),
-      meetingId: user.meetingId,
+      meetingId: user.meetingId || '',
       name: user.name,
-      isOnline: user.isOnline ?? true,
+      isOnline: user.isOnline !== undefined ? user.isOnline : true,
+      isHost: user.isHost || false,
       joinedAt: new Date()
     };
     
     this.data.realUsers.push(newUser);
     
-    // Add to active session
-    const meetingId = user.meetingId;
-    if (!this.data.activeSessions[meetingId]) {
-      this.data.activeSessions[meetingId] = {};
+    if (user.meetingId && !this.data.activeSessions[user.meetingId]) {
+      this.data.activeSessions[user.meetingId] = {};
     }
-    this.data.activeSessions[meetingId][newUser.id] = {
-      name: user.name,
-      joinedAt: new Date().toISOString(),
-      isActive: true
-    };
+    if (user.meetingId) {
+      this.data.activeSessions[user.meetingId][newUser.id] = {
+        name: user.name,
+        joinedAt: new Date().toISOString(),
+        isActive: true
+      };
+    }
     
     this.saveData();
     return newUser;
@@ -204,12 +188,9 @@ export class JSONStorage {
     
     this.data.realUsers[index] = { ...this.data.realUsers[index], ...updates };
     
-    // Update active session
     const user = this.data.realUsers[index];
-    const meetingId = user.meetingId;
-    const session = this.data.activeSessions[meetingId];
-    if (session && session[id]) {
-      session[id].isActive = updates.isOnline ?? true;
+    if (user.meetingId && this.data.activeSessions[user.meetingId]?.[id]) {
+      this.data.activeSessions[user.meetingId][id].isActive = updates.isOnline !== undefined ? updates.isOnline : true;
     }
     
     this.saveData();
@@ -217,30 +198,27 @@ export class JSONStorage {
   }
 
   async removeRealUser(id: string): Promise<boolean> {
-    const userIndex = this.data.realUsers.findIndex(u => u.id === id);
-    if (userIndex === -1) return false;
+    const index = this.data.realUsers.findIndex(u => u.id === id);
+    if (index === -1) return false;
     
-    const user = this.data.realUsers[userIndex];
-    const meetingId = user.meetingId;
-    this.data.realUsers.splice(userIndex, 1);
+    const user = this.data.realUsers[index];
+    this.data.realUsers.splice(index, 1);
     
-    // Remove from active session
-    const session = this.data.activeSessions[meetingId];
-    if (session && session[id]) {
-      delete this.data.activeSessions[meetingId][id];
+    if (user.meetingId && this.data.activeSessions[user.meetingId]) {
+      delete this.data.activeSessions[user.meetingId][id];
     }
     
     this.saveData();
     return true;
   }
 
-  // Chat operations
+  // Message operations
   async addMessage(message: InsertMessage): Promise<ChatMessage> {
     const newMessage: ChatMessage = {
       id: randomUUID(),
-      meetingId: message.meetingId,
-      senderId: message.senderId || randomUUID(),
-      senderName: message.senderName || 'مستخدم',
+      meetingId: message.meetingId || '',
+      senderId: message.senderId || '',
+      senderName: message.senderName,
       senderAvatar: message.senderAvatar || null,
       message: message.message,
       timestamp: new Date(),
@@ -254,7 +232,9 @@ export class JSONStorage {
   }
 
   async getMessages(meetingId: string): Promise<ChatMessage[]> {
-    return this.data.messages.filter(m => m.meetingId === meetingId);
+    return this.data.messages
+      .filter(m => m.meetingId === meetingId)
+      .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
   }
 
   async deleteMessage(id: string): Promise<boolean> {
@@ -267,65 +247,23 @@ export class JSONStorage {
   }
 
   // Session management
-  async addUserToMeeting(meetingId: string, userId: string, userName: string): Promise<void> {
+  async getActiveSessions(meetingId: string): Promise<Record<string, any>> {
+    return this.data.activeSessions[meetingId] || {};
+  }
+
+  async updateSession(meetingId: string, sessionId: string, sessionData: any): Promise<void> {
     if (!this.data.activeSessions[meetingId]) {
       this.data.activeSessions[meetingId] = {};
     }
-    
-    this.data.activeSessions[meetingId][userId] = {
-      name: userName,
-      joinedAt: new Date().toISOString(),
-      isActive: true
-    };
-    
+    this.data.activeSessions[meetingId][sessionId] = sessionData;
     this.saveData();
   }
 
-  async removeUserFromMeeting(meetingId: string, userId: string): Promise<void> {
-    const session = this.data.activeSessions[meetingId];
-    if (session && session[userId]) {
-      delete this.data.activeSessions[meetingId][userId];
+  async removeSession(meetingId: string, sessionId: string): Promise<void> {
+    if (this.data.activeSessions[meetingId]) {
+      delete this.data.activeSessions[meetingId][sessionId];
       this.saveData();
     }
-  }
-
-  async getActiveMeetingUsers(meetingId: string): Promise<{id: string, name: string, joinedAt: Date}[]> {
-    const session = this.data.activeSessions[meetingId];
-    if (!session) return [];
-    
-    return Object.entries(session)
-      .filter(([_, data]) => data.isActive)
-      .map(([userId, data]) => ({
-        id: userId,
-        name: data.name,
-        joinedAt: new Date(data.joinedAt)
-      }));
-  }
-
-  // Get all data for debugging
-  async getAllData(): Promise<StorageData> {
-    return this.data;
-  }
-
-  // Clean up old sessions (call periodically)
-  async cleanupOldSessions(maxAgeHours: number = 24): Promise<void> {
-    const cutoffTime = new Date(Date.now() - (maxAgeHours * 60 * 60 * 1000));
-    
-    Object.keys(this.data.activeSessions).forEach(meetingId => {
-      Object.entries(this.data.activeSessions[meetingId]).forEach(([userId, data]) => {
-        const joinedAt = new Date(data.joinedAt);
-        if (joinedAt < cutoffTime) {
-          delete this.data.activeSessions[meetingId][userId];
-        }
-      });
-      
-      // Remove empty meeting sessions
-      if (Object.keys(this.data.activeSessions[meetingId]).length === 0) {
-        delete this.data.activeSessions[meetingId];
-      }
-    });
-    
-    this.saveData();
   }
 }
 

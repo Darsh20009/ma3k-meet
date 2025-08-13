@@ -72,6 +72,27 @@ export const chatMessages = pgTable("chat_messages", {
 export const insertMeetingSchema = createInsertSchema(meetings).omit({
   id: true,
   createdAt: true
+}).extend({
+  name: z.string().min(1, "اسم الاجتماع مطلوب"),
+  type: z.string().optional(),
+  hostId: z.string().optional(),
+  meetingCode: z.string().optional(),
+  password: z.string().nullable().optional(),
+  isPasswordProtected: z.boolean().optional(),
+  maxParticipants: z.number().optional(),
+  waitingRoom: z.boolean().optional(),
+  recordMeeting: z.boolean().optional(),
+  allowScreenShare: z.boolean().optional(),
+  allowChat: z.boolean().optional(),
+  muteOnJoin: z.boolean().optional(),
+  settings: z.object({
+    messageSpeed: z.enum(["slow", "medium", "fast"]).optional(),
+    conversationType: z.enum(["formal", "friendly", "technical"]).optional(),
+    autoSounds: z.boolean().optional(),
+    virtualParticipantsEnabled: z.boolean().optional(),
+    backgroundEffects: z.boolean().optional(),
+    reactionAnimations: z.boolean().optional()
+  }).optional()
 });
 
 export const insertParticipantSchema = createInsertSchema(virtualParticipants).omit({
@@ -96,8 +117,4 @@ export type InsertMessage = z.infer<typeof insertMessageSchema>;
 export type Meeting = typeof meetings.$inferSelect;
 export type VirtualParticipant = typeof virtualParticipants.$inferSelect;
 export type RealUser = typeof realUsers.$inferSelect;
-export type ChatMessage = typeof chatMessages.$inferSelect;
-export type InsertUser = z.infer<typeof insertUserSchema>;
-export type RealUser = typeof realUsers.$inferSelect;
-export type InsertMessage = z.infer<typeof insertMessageSchema>;
 export type ChatMessage = typeof chatMessages.$inferSelect;

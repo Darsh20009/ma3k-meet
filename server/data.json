@@ -1,7 +1,59 @@
 {
-  "meetings": [],
+  "meetings": [
+    {
+      "id": "a0b55ec5-9172-46ea-a272-128c6547a991",
+      "name": "تست",
+      "type": "اجتماع عمل",
+      "meetingCode": "195933",
+      "hostId": "anonymous-host",
+      "password": null,
+      "isPasswordProtected": false,
+      "maxParticipants": 100,
+      "waitingRoom": false,
+      "recordMeeting": false,
+      "allowScreenShare": true,
+      "allowChat": true,
+      "muteOnJoin": false,
+      "settings": {
+        "messageSpeed": "medium",
+        "conversationType": "friendly",
+        "autoSounds": false,
+        "virtualParticipantsEnabled": true,
+        "backgroundEffects": true,
+        "reactionAnimations": true
+      },
+      "createdAt": "2025-08-13T04:32:34.266Z"
+    },
+    {
+      "id": "79a7ed31-b72e-4dcb-bf38-37df35b2e0c9",
+      "name": "اختبار الاجتماع المحمي",
+      "type": "اجتماع عمل",
+      "meetingCode": "216552",
+      "hostId": "anonymous-host",
+      "password": "12345",
+      "isPasswordProtected": true,
+      "maxParticipants": 100,
+      "waitingRoom": false,
+      "recordMeeting": false,
+      "allowScreenShare": true,
+      "allowChat": true,
+      "muteOnJoin": false,
+      "settings": {
+        "messageSpeed": "medium",
+        "conversationType": "friendly",
+        "autoSounds": false,
+        "virtualParticipantsEnabled": true,
+        "backgroundEffects": true,
+        "reactionAnimations": true
+      },
+      "createdAt": "2025-08-13T04:32:46.362Z"
+    }
+  ],
   "participants": [],
   "realUsers": [],
   "messages": [],
-  "activeSessions": {}
+  "activeSessions": {
+    "a0b55ec5-9172-46ea-a272-128c6547a991": {},
+    "79a7ed31-b72e-4dcb-bf38-37df35b2e0c9": {}
+  }
 }

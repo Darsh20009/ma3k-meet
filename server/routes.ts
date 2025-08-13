@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
 import { storage } from "./storage";
-import { jsonStorage } from "./json-storage";
+import { jsonStorage } from "./json-storage-fixed";
 import { insertMeetingSchema, insertParticipantSchema, insertUserSchema, insertMessageSchema } from "@shared/schema";
 import { z } from "zod";
 
@@ -18,11 +18,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Meeting routes - Using JSON Storage
   app.post("/api/meetings", async (req, res) => {
     try {
-      const meetingData = insertMeetingSchema.parse(req.body);
-      const meeting = await jsonStorage.createMeeting(meetingData);
+      console.log('Raw meeting data received:', JSON.stringify(req.body, null, 2));
+      
+      // Add defaults for required fields that might be missing
+      const meetingData = {
+        ...req.body,
+        meetingCode: req.body.meetingCode || Math.random().toString().slice(2, 8),
+        hostId: req.body.hostId || 'anonymous-host',
+        isPasswordProtected: req.body.isPasswordProtected || false,
+        maxParticipants: req.body.maxParticipants || 100,
+        waitingRoom: req.body.waitingRoom || false,
+        recordMeeting: req.body.recordMeeting || false,
+        allowScreenShare: req.body.allowScreenShare !== undefined ? req.body.allowScreenShare : true,
+        allowChat: req.body.allowChat !== undefined ? req.body.allowChat : true,
+        muteOnJoin: req.body.muteOnJoin || false,
+        settings: req.body.settings || {
+          messageSpeed: 'medium',
+          conversationType: 'friendly',
+          autoSounds: false,
+          virtualParticipantsEnabled: true,
+          backgroundEffects: true,
+          reactionAnimations: true
+        }
+      };
+
+      console.log('Processed meeting data:', JSON.stringify(meetingData, null, 2));
+      
+      const validatedData = insertMeetingSchema.parse(meetingData);
+      console.log('Validation successful:', JSON.stringify(validatedData, null, 2));
+      
+      const meeting = await jsonStorage.createMeeting(validatedData);
+      console.log('Meeting created successfully:', JSON.stringify(meeting, null, 2));
+      
       res.json(meeting);
-    } catch (error) {
-      res.status(400).json({ error: "Invalid meeting data" });
+    } catch (error: any) {
+      console.error('Meeting creation failed:', error);
+      console.error('Error details:', error.errors || error.message);
+      
+      const errorMessage = error.errors 
+        ? `Validation failed: ${error.errors.map((e: any) => `${e.path.join('.')}: ${e.message}`).join(', ')}`
+        : error.message || "Invalid meeting data";
+        
+      res.status(400).json({ 
+        error: errorMessage,
+        details: error.errors || error.message
+      });
     }
   });
 
@@ -70,7 +110,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const realUsers = await jsonStorage.getRealUsers(meeting.id);
       const totalCount = participants.length + realUsers.length;
       
-      if (totalCount >= meeting.maxParticipants) {
+      if (totalCount >= (meeting.maxParticipants || 100)) {
         return res.status(423).json({ error: "Meeting is at capacity" });
       }
 
