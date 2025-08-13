@@ -94,9 +94,10 @@ export default function JoinSharedMeeting() {
     joinMutation.mutate({
       meetingId: meeting.id,
       name: userName.trim(),
-      avatar: userName.trim().slice(0, 2).toUpperCase(),
+      avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(userName.trim())}&background=random`,
+      status: 'active',
       isOnline: true,
-      status: 'online'
+      isHost: false
     });
   };
 
@@ -220,7 +221,7 @@ export default function JoinSharedMeeting() {
             <p className="text-purple-200 text-xs mb-2">كود الاجتماع</p>
             <div className="bg-gradient-to-r from-purple-600/20 to-pink-600/20 backdrop-blur-sm border border-purple-500/30 rounded-lg px-4 py-2 inline-block">
               <span className="text-white font-mono text-lg tracking-wider">
-                {meetingId.substring(0, 6).toUpperCase()}
+                {meeting.meetingCode}
               </span>
             </div>
           </div>
