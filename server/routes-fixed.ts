@@ -81,33 +81,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!meeting) {
         return res.status(404).json({ error: "Meeting not found" });
       }
-      res.json(meeting);
-    } catch (error) {
-      res.status(500).json({ error: "Failed to fetch meeting" });
-    }
-  });
-
-  // Join meeting with code and optional password
-  app.post("/api/meetings/join", async (req, res) => {
-    try {
-      const { meetingCode, password, userName } = req.body;
       
-      if (!meetingCode || !userName) {
-        return res.status(400).json({ error: "Meeting code and user name are required" });
-      }
-
-      const meeting = await jsonStorage.getMeetingByCode(meetingCode);
-      if (!meeting) {
-        return res.status(404).json({ error: "Meeting not found" });
-      }
-
-      if (meeting.isPasswordProtected && meeting.password !== password) {
-        return res.status(403).json({ error: "Incorrect password" });
-      }
-
-      // Check if meeting is at capacity
-      const participants = await jsonStorage.getParticipants(meeting.id);
-      const realUsers = await jsonStorage.getRealUsers(meeting.id);
+      const participants = await jsonStorage.getParticipants(req.params.id);
+      const realUsers = await jsonStorage.getRealUsers(req.params.id);
+      const sessionUsers = await jsonStorage.getActiveSessions(req.params.id);
       const totalCount = participants.length + realUsers.length;
       
       if (totalCount >= (meeting.maxParticipants || 100)) {
@@ -116,41 +93,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.json({ 
         meeting, 
-        canJoin: true, 
-        message: "Access granted" 
+        participants, 
+        realUsers, 
+        sessionUsers: sessionUsers || {},
+        totalCount 
       });
     } catch (error) {
-      res.status(500).json({ error: "Failed to join meeting" });
+      res.status(500).json({ error: "Failed to fetch meeting" });
     }
   });
 
-  // Verify meeting password
-  app.post("/api/meetings/:id/verify-password", async (req, res) => {
+  app.get("/api/meetings/code/:code", async (req, res) => {
     try {
-      const { password } = req.body;
-      const meeting = await jsonStorage.getMeeting(req.params.id);
-      
+      const meeting = await jsonStorage.getMeetingByCode(req.params.code);
       if (!meeting) {
         return res.status(404).json({ error: "Meeting not found" });
       }
-
-      if (meeting.isPasswordProtected && meeting.password !== password) {
-        return res.status(403).json({ error: "Incorrect password" });
-      }
-
-      res.json({ verified: true });
+      res.json(meeting);
     } catch (error) {
-      res.status(500).json({ error: "Failed to verify password" });
-    }
-  });
-
-  // Enhanced session management
-  app.get("/api/meetings/:id/session-users", async (req, res) => {
-    try {
-      const users = await jsonStorage.getActiveMeetingUsers(req.params.id);
-      res.json(users);
-    } catch (error) {
-      res.status(500).json({ error: "Failed to fetch session users" });
+      res.status(500).json({ error: "Failed to fetch meeting" });
     }
   });
 
@@ -164,6 +125,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(meeting);
     } catch (error) {
       res.status(500).json({ error: "Failed to update meeting" });
+    }
+  });
+
+  app.delete("/api/meetings/:id", async (req, res) => {
+    try {
+      const success = await jsonStorage.deleteMeeting(req.params.id);
+      if (!success) {
+        return res.status(404).json({ error: "Meeting not found" });
+      }
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to delete meeting" });
     }
   });
 
@@ -187,6 +160,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.put("/api/participants/:id", async (req, res) => {
+    try {
+      const updates = req.body;
+      const participant = await jsonStorage.updateParticipant(req.params.id, updates);
+      if (!participant) {
+        return res.status(404).json({ error: "Participant not found" });
+      }
+      res.json(participant);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update participant" });
+    }
+  });
+
   app.delete("/api/participants/:id", async (req, res) => {
     try {
       const success = await jsonStorage.removeParticipant(req.params.id);
@@ -204,9 +190,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userData = insertUserSchema.parse(req.body);
       const user = await jsonStorage.addRealUser(userData);
-      
-      // User session is handled in addRealUser method
-      
       res.json(user);
     } catch (error) {
       res.status(400).json({ error: "Invalid user data" });
@@ -219,6 +202,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(users);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch users" });
+    }
+  });
+
+  app.get("/api/meetings/:id/session-users", async (req, res) => {
+    try {
+      const sessions = await jsonStorage.getActiveSessions(req.params.id);
+      res.json(sessions || {});
+    } catch (error) {
+      console.error('Session users error:', error);
+      res.status(200).json({});
     }
   });
 
@@ -237,17 +230,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.delete("/api/users/:id", async (req, res) => {
     try {
-      // Get all users to find the one being deleted
-      const allUsers = await jsonStorage.getRealUsers('');
-      const userToDelete = allUsers.find(u => u.id === req.params.id);
-      
       const success = await jsonStorage.removeRealUser(req.params.id);
       if (!success) {
         return res.status(404).json({ error: "User not found" });
       }
-      
-      // Session cleanup is handled in removeRealUser method
-      
       res.json({ success: true });
     } catch (error) {
       res.status(500).json({ error: "Failed to remove user" });
@@ -307,163 +293,81 @@ export async function registerRoutes(app: Express): Promise<Server> {
           return;
         }
         
-        if (message.type === 'leave') {
-          if (extendedWs.meetingId && extendedWs.userId) {
-            broadcastToChat(extendedWs.meetingId, {
-              type: 'user_left',
-              userId: extendedWs.userId
-            }, extendedWs);
+        if (message.type === 'message' && extendedWs.meetingId) {
+          // Store message in JSON storage
+          try {
+            const messageData = {
+              meetingId: extendedWs.meetingId,
+              senderId: extendedWs.userId || 'anonymous',
+              senderName: message.senderName || 'مستخدم مجهول',
+              senderAvatar: message.senderAvatar,
+              message: message.message,
+              isFromRealUser: true,
+              isSystemMessage: false
+            };
             
-            const chatConns = chatConnections.get(extendedWs.meetingId);
-            if (chatConns) {
-              chatConns.delete(extendedWs);
-              if (chatConns.size === 0) {
-                chatConnections.delete(extendedWs.meetingId);
-              }
-            }
-            userSessions.delete(extendedWs.userId);
+            await jsonStorage.addMessage(messageData);
+          } catch (error) {
+            console.error('Failed to store message:', error);
           }
-          return;
-        }
-        
-        if (message.type === 'message') {
-          if (extendedWs.meetingId && message.message) {
-            broadcastToChat(extendedWs.meetingId, {
-              type: 'message',
-              message: message.message
-            });
-          }
-          return;
-        }
-        
-        // Original meeting functionality
-        if (message.type === 'join_meeting') {
-          extendedWs.meetingId = message.meetingId;
-          ws.send(JSON.stringify({
-            type: 'joined',
-            meetingId: message.meetingId
-          }));
-        }
-
-        // WebRTC signaling
-        if (message.type === 'join_webrtc') {
-          extendedWs.meetingId = message.meetingId;
-          extendedWs.userId = message.userId;
           
-          // Notify other users in the meeting
-          wss.clients.forEach((client) => {
-            const extendedClient = client as ExtendedWebSocket;
-            if (client !== ws && client.readyState === WebSocket.OPEN && 
-                extendedClient.meetingId === message.meetingId) {
-              client.send(JSON.stringify({
-                type: 'webrtc_user_joined',
-                userId: message.userId,
-                userName: message.userName
-              }));
+          // Broadcast to chat participants
+          broadcastToChat(extendedWs.meetingId, {
+            type: 'message',
+            message: {
+              id: Date.now().toString(),
+              senderId: extendedWs.userId,
+              senderName: message.senderName,
+              senderAvatar: message.senderAvatar,
+              message: message.message,
+              timestamp: new Date(),
+              isFromRealUser: true
             }
           });
+          return;
         }
 
         if (message.type === 'webrtc_offer' || message.type === 'webrtc_answer' || message.type === 'webrtc_ice_candidate') {
-          // Forward signaling messages to target user
-          wss.clients.forEach((client) => {
-            const extendedClient = client as ExtendedWebSocket;
-            if (client.readyState === WebSocket.OPEN && 
-                extendedClient.userId === message.targetUserId &&
-                extendedClient.meetingId === message.meetingId) {
-              client.send(JSON.stringify({
-                type: message.type,
-                userId: message.userId,
-                ...(message.offer && { offer: message.offer }),
-                ...(message.answer && { answer: message.answer }),
-                ...(message.candidate && { candidate: message.candidate })
-              }));
-            }
-          });
+          // Forward WebRTC signaling
+          if (extendedWs.meetingId) {
+            broadcastToChat(extendedWs.meetingId, message, extendedWs);
+          }
+          return;
         }
         
-        if (message.type === 'user_joined') {
-          // Add real user to meeting
-          const userData = {
-            meetingId: message.meetingId,
-            name: message.userName,
-            avatar: message.userAvatar || message.userName.slice(0, 2),
-            status: 'active' as const,
-            isOnline: true,
-            isHost: message.isHost || false
-          };
-          
-          const user = await storage.addRealUser(userData);
-          extendedWs.userId = user.id;
-          
-          // Broadcast user joined to all clients in this meeting
-          wss.clients.forEach((client) => {
-            const extendedClient = client as ExtendedWebSocket;
-            if (client.readyState === WebSocket.OPEN && extendedClient.meetingId === message.meetingId) {
-              client.send(JSON.stringify({
-                type: 'user_joined',
-                user: user
-              }));
-            }
-          });
-        }
-        
-        if (message.type === 'send_message') {
-          const chatMessage = await storage.addMessage({
-            meetingId: message.meetingId,
-            senderId: extendedWs.userId || null, // Use the stored user ID
-            senderName: message.senderName || 'أنت',
-            senderAvatar: message.senderAvatar || 'أ',
-            message: message.message,
-            isSystemMessage: false,
-            isFromRealUser: true
-          });
-
-          // Broadcast message to all clients in the same meeting
-          wss.clients.forEach((client) => {
-            const extendedClient = client as ExtendedWebSocket;
-            if (client.readyState === WebSocket.OPEN && extendedClient.meetingId === message.meetingId) {
-              client.send(JSON.stringify({
-                type: 'new_message',
-                message: chatMessage
-              }));
-            }
-          });
-        }
       } catch (error) {
         console.error('WebSocket message error:', error);
       }
     });
 
-    ws.on('close', async () => {
-      console.log('Client disconnected from WebSocket');
-      
-      // Mark user as offline if they were connected
-      const extendedWs = ws as ExtendedWebSocket;
-      if (extendedWs.userId) {
-        await storage.updateRealUser(extendedWs.userId, { isOnline: false });
-        
-        // Broadcast user left to remaining clients
-        wss.clients.forEach((client) => {
-          const extendedClient = client as ExtendedWebSocket;
-          if (client.readyState === WebSocket.OPEN && extendedClient.meetingId === extendedWs.meetingId) {
-            client.send(JSON.stringify({
+    ws.on('close', () => {
+      if (extendedWs.meetingId && extendedWs.userId) {
+        const chatSet = chatConnections.get(extendedWs.meetingId);
+        if (chatSet) {
+          chatSet.delete(extendedWs);
+          if (chatSet.size === 0) {
+            chatConnections.delete(extendedWs.meetingId);
+          } else {
+            // Broadcast user left
+            broadcastToChat(extendedWs.meetingId, {
               type: 'user_left',
               userId: extendedWs.userId
-            }));
+            });
           }
-        });
+        }
+        
+        userSessions.delete(extendedWs.userId);
       }
     });
   });
-  
-  // Broadcast function for personal chats
-  function broadcastToChat(chatId: string, message: any, excludeWs?: ExtendedWebSocket) {
-    const chatConns = chatConnections.get(chatId);
-    if (chatConns) {
-      chatConns.forEach((clientWs) => {
-        if (clientWs !== excludeWs && clientWs.readyState === WebSocket.OPEN) {
-          clientWs.send(JSON.stringify(message));
+
+  function broadcastToChat(chatId: string, data: any, sender?: ExtendedWebSocket) {
+    const chatSet = chatConnections.get(chatId);
+    if (chatSet) {
+      const messageStr = JSON.stringify(data);
+      chatSet.forEach((client) => {
+        if (client !== sender && client.readyState === WebSocket.OPEN) {
+          client.send(messageStr);
         }
       });
     }

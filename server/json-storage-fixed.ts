@@ -156,18 +156,21 @@ export class JSONStorage {
       id: randomUUID(),
       meetingId: user.meetingId || '',
       name: user.name,
+      avatar: user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=random`,
+      status: user.status || 'active',
+      joinedAt: new Date(),
       isOnline: user.isOnline !== undefined ? user.isOnline : true,
-      isHost: user.isHost || false,
-      joinedAt: new Date()
+      isHost: user.isHost || false
     };
     
     this.data.realUsers.push(newUser);
     
-    if (user.meetingId && !this.data.activeSessions[user.meetingId]) {
-      this.data.activeSessions[user.meetingId] = {};
+    const meetingId = user.meetingId || '';
+    if (meetingId && !this.data.activeSessions[meetingId]) {
+      this.data.activeSessions[meetingId] = {};
     }
-    if (user.meetingId) {
-      this.data.activeSessions[user.meetingId][newUser.id] = {
+    if (meetingId) {
+      this.data.activeSessions[meetingId][newUser.id] = {
         name: user.name,
         joinedAt: new Date().toISOString(),
         isActive: true
