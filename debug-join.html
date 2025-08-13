@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Debug Join Page</title>
+</head>
+<body>
+<h1>Debug Test Page</h1>
+<p>Testing meeting join functionality</p>
+<script>
+console.log('Debug page loaded');
+// Test fetch to API
+fetch('/api/meetings/4bd45567-4a0b-4f52-8d21-8f423740ad8a')
+  .then(res => res.json())
+  .then(data => {
+    console.log('Meeting data:', data);
+    document.body.innerHTML += '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+  })
+  .catch(err => {
+    console.error('Error:', err);
+    document.body.innerHTML += '<p style="color: red;">Error: ' + err.message + '</p>';
+  });
+</script>
+</body>
+</html>

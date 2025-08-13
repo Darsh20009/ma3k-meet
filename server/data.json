@@ -110,6 +110,27 @@
         "autoSounds": false
       },
       "createdAt": "2025-08-13T09:00:12.382Z"
+    },
+    {
+      "id": "4bd45567-4a0b-4f52-8d21-8f423740ad8a",
+      "name": "س",
+      "type": "اجتماع عمل",
+      "meetingCode": "682314",
+      "hostId": "anonymous-host",
+      "password": null,
+      "isPasswordProtected": false,
+      "maxParticipants": 100,
+      "waitingRoom": false,
+      "recordMeeting": false,
+      "allowScreenShare": true,
+      "allowChat": true,
+      "muteOnJoin": false,
+      "settings": {
+        "messageSpeed": "medium",
+        "conversationType": "friendly",
+        "autoSounds": false
+      },
+      "createdAt": "2025-08-13T09:05:19.698Z"
     }
   ],
   "participants": [],
@@ -120,6 +141,7 @@
     "79a7ed31-b72e-4dcb-bf38-37df35b2e0c9": {},
     "a716e797-b942-475b-a067-c42116563446": {},
     "6fb2bb89-f11f-439b-9d51-f8942e480844": {},
-    "6ce0aa79-5574-442c-b3ef-e022f5e3df33": {}
+    "6ce0aa79-5574-442c-b3ef-e022f5e3df33": {},
+    "4bd45567-4a0b-4f52-8d21-8f423740ad8a": {}
   }
 }

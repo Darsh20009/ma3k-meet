@@ -47,25 +47,17 @@ export default function EnhancedJoinMeeting() {
   const fetchMeetingInfo = async () => {
     try {
       setIsLoading(true);
-      const response = await apiRequest('/api/meetings/join', {
-        method: 'POST',
-        body: JSON.stringify({
-          meetingCode,
-          userName: 'Preview User' // Just for preview
-        }),
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
+      // Use the meeting code endpoint instead
+      const response = await fetch(`/api/meetings/code/${meetingCode}`);
 
       if (response.ok) {
-        const data = await response.json();
-        setMeeting(data.meeting);
+        const meeting = await response.json();
+        setMeeting(meeting);
         
         // Get participant count
         const [participantsRes, usersRes] = await Promise.all([
-          apiRequest(`/api/meetings/${data.meeting.id}/participants`),
-          apiRequest(`/api/meetings/${data.meeting.id}/users`)
+          fetch(`/api/meetings/${meeting.id}/participants`),
+          fetch(`/api/meetings/${meeting.id}/users`)
         ]);
 
         if (participantsRes.ok && usersRes.ok) {
@@ -75,10 +67,6 @@ export default function EnhancedJoinMeeting() {
           ]);
           setParticipantCount(participants.length + users.length);
         }
-      } else if (response.status === 403) {
-        // Password required
-        const data = await response.json();
-        setShowSecurity(true);
       } else if (response.status === 404) {
         toast({
           title: "الاجتماع غير موجود",
@@ -88,6 +76,7 @@ export default function EnhancedJoinMeeting() {
         setShowSecurity(true);
       }
     } catch (error) {
+      console.error('Error fetching meeting:', error);
       toast({
         title: "خطأ في الاتصال",
         description: "تأكد من اتصالك بالإنترنت",
