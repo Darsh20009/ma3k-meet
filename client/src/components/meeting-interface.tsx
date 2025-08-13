@@ -413,13 +413,15 @@ export default function MeetingInterface({ meeting, onLeave }: MeetingInterfaceP
 
       <div className="flex-1 flex overflow-hidden relative">
         
-        {/* Desktop Sidebar */}
-        <div className="hidden md:block">
-          <ParticipantManagement 
-            meeting={meeting} 
-            showParticipants={showParticipants}
-          />
-        </div>
+        {/* Desktop Sidebar - Show only when requested */}
+        {showParticipants && (
+          <div className="hidden md:block">
+            <ParticipantManagement 
+              meeting={meeting} 
+              showParticipants={showParticipants}
+            />
+          </div>
+        )}
         
         {/* Enhanced Main Meeting Area */}
         <main className="flex-1 flex flex-col bg-gradient-to-br from-slate-900 via-purple-900/50 to-slate-900 relative overflow-hidden">
@@ -864,20 +866,25 @@ export default function MeetingInterface({ meeting, onLeave }: MeetingInterfaceP
           </div>
         </div>
 
-        {/* Mobile Participants Overlay */}
-        <div className={`md:hidden fixed inset-0 bg-black bg-opacity-50 z-40 transition-opacity duration-300 ${
+        {/* Enhanced Mobile Participants Overlay */}
+        <div className={`md:hidden fixed inset-0 bg-black bg-opacity-50 z-40 transition-opacity duration-300 backdrop-blur-sm ${
           showParticipants ? 'opacity-100 visible' : 'opacity-0 invisible'
         }`} onClick={toggleParticipants}>
-          <div className={`absolute left-0 top-0 h-full w-80 max-w-[85vw] bg-white transform transition-transform duration-300 ${
+          <div className={`absolute left-0 top-0 h-full w-80 max-w-[85vw] bg-gradient-to-br from-slate-50 via-purple-50/30 to-pink-50/20 backdrop-blur-lg shadow-2xl transform transition-transform duration-300 ${
             showParticipants ? 'translate-x-0' : '-translate-x-full'
           }`} onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between p-4 border-b bg-gray-50">
-              <h3 className="font-semibold text-gray-800">المشاركون</h3>
+            <div className="flex items-center justify-between p-4 border-b border-purple-200/30 bg-gradient-to-r from-white/80 via-purple-50/50 to-pink-50/30 backdrop-blur-sm">
+              <div className="flex items-center">
+                <div className="w-8 h-8 bg-gradient-to-br from-purple-600 to-pink-600 rounded-lg flex items-center justify-center text-white mr-2 shadow-lg">
+                  <i className="fas fa-users text-sm"></i>
+                </div>
+                <h3 className="font-bold bg-gradient-to-r from-gray-800 via-purple-700 to-pink-700 bg-clip-text text-transparent">إدارة المشاركين</h3>
+              </div>
               <Button 
                 onClick={toggleParticipants}
                 variant="ghost" 
                 size="sm"
-                className="w-8 h-8 p-0"
+                className="w-8 h-8 p-0 text-purple-600 hover:text-red-500 bg-gradient-to-r from-white/80 to-purple-100/60 hover:from-red-100/80 hover:to-red-200/60 rounded-full backdrop-blur-sm border border-purple-200/40 hover:border-red-300/40 transition-all duration-300"
               >
                 <i className="fas fa-times"></i>
               </Button>

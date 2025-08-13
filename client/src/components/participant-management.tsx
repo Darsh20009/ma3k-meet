@@ -144,110 +144,170 @@ export default function ParticipantManagement({ meeting, realUsers = [] }: Parti
   };
 
   return (
-    <aside className="w-80 bg-white border-l border-gray-200 flex flex-col">
+    <aside className="w-80 bg-gradient-to-br from-slate-50 via-purple-50/30 to-pink-50/20 border-l border-purple-200/40 flex flex-col backdrop-blur-lg">
       
-      {/* Meeting Creation Section */}
-      <div className="p-6 border-b border-gray-100">
-        <h2 className="text-lg font-semibold text-gray-800 mb-4">بيانات الاجتماع</h2>
+      {/* Enhanced Meeting Info Section */}
+      <div className="p-6 border-b border-purple-200/30 bg-gradient-to-r from-white/80 via-purple-50/50 to-pink-50/30 backdrop-blur-sm relative">
+        {/* Background Pattern */}
+        <div className="absolute inset-0 opacity-5">
+          <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 via-purple-600/10 to-pink-600/10"></div>
+          <div className="absolute top-0 left-1/4 w-20 h-20 bg-purple-500/5 rounded-full blur-2xl"></div>
+          <div className="absolute top-0 right-1/4 w-24 h-24 bg-blue-500/5 rounded-full blur-2xl"></div>
+        </div>
         
-        <div className="space-y-3">
+        <div className="flex items-center mb-4 relative">
+          <div className="w-10 h-10 bg-gradient-to-br from-purple-600 to-pink-600 rounded-xl flex items-center justify-center text-white mr-3 shadow-lg">
+            <i className="fas fa-info-circle"></i>
+          </div>
+          <h2 className="text-lg font-bold bg-gradient-to-r from-gray-800 via-purple-700 to-pink-700 bg-clip-text text-transparent">بيانات الاجتماع</h2>
+        </div>
+        
+        <div className="space-y-4 relative">
           <div>
-            <span className="text-sm font-medium text-gray-700">اسم الاجتماع:</span>
-            <p className="text-sm text-gray-900 mt-1 bg-gray-50 p-2 rounded">{meeting.name}</p>
+            <span className="text-sm font-semibold text-purple-700 flex items-center mb-2">
+              <i className="fas fa-tag ml-2 text-purple-600"></i>
+              اسم الاجتماع:
+            </span>
+            <p className="text-sm text-gray-900 bg-gradient-to-r from-white/90 to-purple-50/60 p-3 rounded-lg backdrop-blur-sm border border-purple-100/30 shadow-sm font-medium">{meeting.name}</p>
           </div>
           <div>
-            <span className="text-sm font-medium text-gray-700">نوع الاجتماع:</span>
-            <p className="text-sm text-gray-900 mt-1 bg-gray-50 p-2 rounded">{meeting.type}</p>
+            <span className="text-sm font-semibold text-purple-700 flex items-center mb-2">
+              <i className="fas fa-briefcase ml-2 text-purple-600"></i>
+              نوع الاجتماع:
+            </span>
+            <p className="text-sm text-gray-900 bg-gradient-to-r from-white/90 to-purple-50/60 p-3 rounded-lg backdrop-blur-sm border border-purple-100/30 shadow-sm font-medium">{meeting.type}</p>
           </div>
           
-          {/* Meeting Code Display */}
+          {/* Enhanced Meeting Code Display */}
           <div>
-            <span className="text-sm font-medium text-gray-700">رمز الاجتماع:</span>
-            <div className="mt-1 bg-blue-50 p-2 rounded border border-blue-200">
-              <div className="font-mono text-lg font-bold text-blue-600 tracking-wider">
-                {(() => {
-                  const hash = meeting.id.split('-')[0];
-                  const numbers = hash.match(/\d/g) || [];
-                  let code = numbers.join('').slice(0, 6);
-                  if (code.length < 6) {
-                    const chars = hash.replace(/[^a-f0-9]/g, '');
-                    for (let i = 0; i < chars.length && code.length < 6; i++) {
-                      const char = chars[i];
-                      if (/[0-9]/.test(char)) {
-                        code += char;
-                      } else {
-                        code += (parseInt(char, 16) % 10).toString();
+            <span className="text-sm font-semibold text-purple-700 flex items-center mb-2">
+              <i className="fas fa-key ml-2 text-purple-600"></i>
+              رمز الاجتماع:
+            </span>
+            <div className="bg-gradient-to-r from-blue-100/80 to-purple-100/60 p-4 rounded-xl backdrop-blur-sm border border-blue-300/40 shadow-lg relative overflow-hidden">
+              <div className="absolute inset-0 opacity-20">
+                <div className="absolute top-0 right-0 w-12 h-12 bg-blue-500/20 rounded-full blur-xl"></div>
+                <div className="absolute bottom-0 left-0 w-16 h-16 bg-purple-500/20 rounded-full blur-xl"></div>
+              </div>
+              <div className="relative">
+                <div className="font-mono text-2xl font-black bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent tracking-wider text-center">
+                  {(() => {
+                    const hash = meeting.id.split('-')[0];
+                    const numbers = hash.match(/\d/g) || [];
+                    let code = numbers.join('').slice(0, 6);
+                    if (code.length < 6) {
+                      const chars = hash.replace(/[^a-f0-9]/g, '');
+                      for (let i = 0; i < chars.length && code.length < 6; i++) {
+                        const char = chars[i];
+                        if (/[0-9]/.test(char)) {
+                          code += char;
+                        } else {
+                          code += (parseInt(char, 16) % 10).toString();
+                        }
                       }
                     }
-                  }
-                  return code.slice(0, 6);
-                })()}
+                    return code.slice(0, 6);
+                  })()}
+                </div>
+                <p className="text-xs text-blue-700/80 mt-2 text-center font-medium bg-white/50 px-3 py-1 rounded-full backdrop-blur-sm">
+                  <i className="fas fa-share-alt ml-1"></i>
+                  يمكن للآخرين الانضمام بهذا الرمز
+                </p>
               </div>
-              <p className="text-xs text-gray-600 mt-1">يمكن للآخرين الانضمام بهذا الرمز</p>
             </div>
           </div>
 
-          {/* Meeting ID */}
+          {/* Enhanced Meeting ID */}
           <div>
-            <span className="text-sm font-medium text-gray-700">معرف الجلسة:</span>
-            <div className="mt-1 bg-gray-50 p-2 rounded text-xs text-gray-600 font-mono break-all">
+            <span className="text-sm font-semibold text-purple-700 flex items-center mb-2">
+              <i className="fas fa-fingerprint ml-2 text-purple-600"></i>
+              معرف الجلسة:
+            </span>
+            <div className="bg-gradient-to-r from-gray-100/80 to-purple-100/40 p-3 rounded-lg text-xs text-gray-700 font-mono break-all backdrop-blur-sm border border-gray-200/50 shadow-sm">
               {meeting.id}
             </div>
           </div>
 
           <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-gray-700">الحالة:</span>
-            <span className="text-xs bg-green-100 text-green-600 px-2 py-1 rounded flex items-center">
-              <div className="w-2 h-2 bg-green-500 rounded-full ml-1"></div>
-              نشط
+            <span className="text-sm font-semibold text-purple-700 flex items-center">
+              <i className="fas fa-signal ml-2 text-purple-600"></i>
+              الحالة:
+            </span>
+            <span className="text-sm bg-gradient-to-r from-emerald-100/80 to-green-100/80 text-emerald-700 px-4 py-2 rounded-full flex items-center backdrop-blur-sm border border-emerald-300/40 shadow-sm font-medium">
+              <div className="w-2 h-2 bg-emerald-500 rounded-full ml-2 animate-pulse shadow-lg shadow-emerald-500/50"></div>
+              نشط ومتاح
             </span>
           </div>
         </div>
       </div>
       
-      {/* Real Users Section */}
+      {/* Enhanced Real Users Section */}
       {allRealUsers.length > 0 && (
-        <div className="p-6 border-b border-gray-100">
-          <h3 className="text-sm font-semibold text-gray-600 mb-3 flex items-center">
-            <i className="fas fa-users text-blue-500 ml-2"></i>
+        <div className="p-6 border-b border-purple-200/30 bg-gradient-to-r from-white/60 via-blue-50/40 to-purple-50/20 backdrop-blur-sm relative">
+          <div className="absolute inset-0 opacity-5">
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 to-purple-600/10"></div>
+          </div>
+          <h3 className="text-sm font-bold text-blue-700 mb-4 flex items-center relative">
+            <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center text-white mr-2 shadow-lg">
+              <i className="fas fa-users text-sm"></i>
+            </div>
             المستخدمون الحقيقيون ({allRealUsers.length})
           </h3>
-          <div className="space-y-2">
+          <div className="space-y-3">
             {allRealUsers.map((user) => (
               <div
                 key={user.id}
-                className="flex items-center justify-between p-3 rounded-lg bg-blue-50 border border-blue-200"
+                className="flex items-center justify-between p-4 rounded-xl bg-gradient-to-r from-blue-100/80 to-purple-100/60 border border-blue-200/50 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300 relative overflow-hidden"
               >
-                <div className="flex items-center space-x-reverse space-x-3">
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-semibold shadow-lg text-xs">
-                    {user.avatar}
+                <div className="absolute inset-0 opacity-20">
+                  <div className="absolute top-0 right-0 w-8 h-8 bg-blue-500/20 rounded-full blur-lg"></div>
+                  <div className="absolute bottom-0 left-0 w-6 h-6 bg-purple-500/20 rounded-full blur-lg"></div>
+                </div>
+                <div className="flex items-center space-x-reverse space-x-3 relative">
+                  <div className="relative group">
+                    <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full blur opacity-75 group-hover:opacity-100 transition duration-300"></div>
+                    <div className="relative w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 flex items-center justify-center text-white font-bold shadow-xl text-sm">
+                      {user.avatar}
+                    </div>
                   </div>
                   <div>
-                    <div className="font-medium text-gray-800 text-sm flex items-center">
+                    <div className="font-bold text-gray-800 text-sm flex items-center bg-gradient-to-r from-gray-800 to-blue-700 bg-clip-text text-transparent">
                       {user.name}
                       {user.isHost && (
-                        <span className="mr-2 text-xs bg-blue-600 text-white px-2 py-0.5 rounded-full">
+                        <span className="mr-2 text-xs bg-gradient-to-r from-blue-600 to-purple-600 text-white px-3 py-1 rounded-full shadow-lg">
+                          <i className="fas fa-crown ml-1"></i>
                           مضيف
                         </span>
                       )}
                     </div>
-                    <div className={`text-xs px-2 py-0.5 rounded-full ${user.isOnline ? 'text-green-600 bg-green-100' : 'text-gray-500 bg-gray-100'}`}>
-                      {user.isOnline ? 'متصل' : 'غير متصل'}
+                    <div className={`text-xs px-3 py-1 rounded-full backdrop-blur-sm border font-medium ${user.isOnline ? 'text-emerald-700 bg-emerald-100/80 border-emerald-300/40' : 'text-gray-600 bg-gray-100/80 border-gray-300/40'}`}>
+                      <i className={`fas ${user.isOnline ? 'fa-circle text-emerald-500' : 'fa-circle text-gray-400'} ml-1 animate-pulse`}></i>
+                      {user.isOnline ? 'متصل الآن' : 'غير متصل'}
                     </div>
                   </div>
                 </div>
-                <div className={`w-3 h-3 rounded-full ${user.isOnline ? 'bg-green-500' : 'bg-gray-400'}`}></div>
+                <div className={`w-4 h-4 rounded-full shadow-lg ${user.isOnline ? 'bg-gradient-to-r from-emerald-500 to-green-500 animate-pulse' : 'bg-gray-400'}`}></div>
               </div>
             ))}
           </div>
         </div>
       )}
 
-      {/* Participants Management */}
-      <div className="p-6 border-b border-gray-100">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="font-semibold text-gray-800">المشاركون الافتراضيون</h3>
-          <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
+      {/* Enhanced Participants Management */}
+      <div className="p-6 border-b border-purple-200/30 bg-gradient-to-r from-white/60 via-purple-50/40 to-pink-50/20 backdrop-blur-sm relative">
+        <div className="absolute inset-0 opacity-5">
+          <div className="absolute inset-0 bg-gradient-to-r from-purple-600/10 to-pink-600/10"></div>
+          <div className="absolute top-0 left-1/3 w-16 h-16 bg-purple-500/10 rounded-full blur-xl"></div>
+        </div>
+        <div className="flex justify-between items-center mb-4 relative">
+          <div className="flex items-center">
+            <div className="w-8 h-8 bg-gradient-to-br from-purple-600 to-pink-600 rounded-lg flex items-center justify-center text-white mr-2 shadow-lg">
+              <i className="fas fa-robot text-sm"></i>
+            </div>
+            <h3 className="font-bold bg-gradient-to-r from-gray-800 via-purple-700 to-pink-700 bg-clip-text text-transparent">المشاركون الافتراضيون</h3>
+          </div>
+          <span className="text-xs text-purple-700 bg-gradient-to-r from-purple-100/80 to-pink-100/60 px-3 py-1.5 rounded-full backdrop-blur-sm border border-purple-300/40 shadow-sm font-medium">
+            <i className="fas fa-users ml-1"></i>
             {participants.length} مشارك
           </span>
         </div>
@@ -298,18 +358,26 @@ export default function ParticipantManagement({ meeting, realUsers = [] }: Parti
           </div>
         </div>
         
-        {/* Participants List */}
+        {/* Enhanced Participants List */}
         <div className="space-y-3">
-          {participants.map((participant) => (
-            <div key={participant.id} className="flex items-center justify-between bg-gray-50 p-3 rounded-lg">
-              <div className="flex items-center">
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-medium ${getParticipantIconStyle(participant.personality, participant.avatar)}`}>
-                  {getParticipantIcon(participant.personality, participant.avatar)}
-                </div>
-                <span className="mr-2 text-sm font-medium">{participant.name}</span>
+          {participants.map((participant, index) => (
+            <div key={participant.id} className="flex items-center justify-between bg-gradient-to-r from-white/80 to-purple-50/60 p-4 rounded-xl backdrop-blur-sm border border-purple-100/30 shadow-lg hover:shadow-xl transition-all duration-300 relative overflow-hidden">
+              <div className="absolute inset-0 opacity-10">
+                <div className="absolute top-0 right-0 w-6 h-6 bg-purple-500/20 rounded-full blur-lg"></div>
+                <div className="absolute bottom-0 left-0 w-4 h-4 bg-pink-500/20 rounded-full blur-lg"></div>
               </div>
-              <div className="flex items-center space-x-reverse space-x-1">
-                <span className={`text-xs px-2 py-1 rounded ${getStatusColor(participant.status)}`}>
+              <div className="flex items-center relative">
+                <div className="relative group">
+                  <div className={`absolute -inset-0.5 bg-gradient-to-r ${getParticipantIconStyle(participant.personality, participant.avatar).replace('bg-gradient-to-br', '').replace('from-', 'from-').replace('to-', 'to-')} rounded-full blur opacity-75 group-hover:opacity-100 transition duration-300`}></div>
+                  <div className={`relative w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold shadow-xl ${getParticipantIconStyle(participant.personality, participant.avatar)}`}>
+                    {getParticipantIcon(participant.personality, participant.avatar)}
+                  </div>
+                </div>
+                <span className="mr-3 text-sm font-bold bg-gradient-to-r from-gray-800 via-purple-700 to-pink-700 bg-clip-text text-transparent">{participant.name}</span>
+              </div>
+              <div className="flex items-center space-x-reverse space-x-2 relative">
+                <span className={`text-xs px-3 py-1.5 rounded-full font-medium backdrop-blur-sm border transition-all duration-300 ${getStatusColor(participant.status).replace('bg-', 'bg-gradient-to-r from-').replace('text-', 'text-').replace(/bg-gradient-to-r from-([a-z-]+)-100/, 'bg-gradient-to-r from-$1-100/80 to-$1-50/60 border-$1-300/40')}`}>
+                  <i className={`fas ${participant.status === 'active' ? 'fa-circle text-green-500' : participant.status === 'away' ? 'fa-clock text-yellow-500' : 'fa-circle text-gray-400'} ml-1 animate-pulse`}></i>
                   {getStatusText(participant.status)}
                 </span>
                 <Button
@@ -317,7 +385,7 @@ export default function ParticipantManagement({ meeting, realUsers = [] }: Parti
                   disabled={removeParticipantMutation.isPending}
                   variant="ghost"
                   size="sm"
-                  className="text-gray-400 hover:text-red-500 h-6 w-6 p-0"
+                  className="text-gray-400 hover:text-red-500 h-8 w-8 p-0 rounded-full bg-gradient-to-r from-gray-100/80 to-red-100/40 hover:from-red-100/80 hover:to-red-200/60 backdrop-blur-sm border border-gray-200/50 hover:border-red-300/40 transition-all duration-300"
                 >
                   <i className="fas fa-times text-xs"></i>
                 </Button>
@@ -326,59 +394,81 @@ export default function ParticipantManagement({ meeting, realUsers = [] }: Parti
           ))}
           
           {participants.length === 0 && (
-            <div className="text-center py-4">
-              <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-2">
-                <i className="fas fa-users text-gray-400"></i>
+            <div className="text-center py-6 relative">
+              <div className="absolute inset-0 opacity-5">
+                <div className="absolute inset-0 bg-gradient-to-r from-purple-600/10 to-pink-600/10 rounded-lg"></div>
               </div>
-              <p className="text-gray-600 text-sm">لا يوجد مشاركون افتراضيون</p>
-              <p className="text-gray-500 text-xs mt-1">أضف مشاركين لبدء المحاكاة</p>
+              <div className="w-16 h-16 bg-gradient-to-br from-gray-200/80 to-purple-200/60 rounded-full flex items-center justify-center mx-auto mb-3 backdrop-blur-sm shadow-lg relative">
+                <i className="fas fa-users text-gray-500 text-lg"></i>
+              </div>
+              <p className="text-gray-700 text-sm font-semibold bg-gradient-to-r from-gray-700 to-purple-600 bg-clip-text text-transparent">لا يوجد مشاركون افتراضيون</p>
+              <p className="text-purple-600/70 text-xs mt-2 font-medium">أضف مشاركين لبدء المحاكاة الذكية</p>
             </div>
           )}
         </div>
       </div>
       
-      {/* Quick Settings */}
-      <div className="p-6">
-        <h3 className="font-semibold text-gray-800 mb-4">الإعدادات السريعة</h3>
+      {/* Enhanced Quick Settings */}
+      <div className="p-6 bg-gradient-to-r from-white/50 via-purple-50/30 to-pink-50/20 backdrop-blur-sm relative">
+        <div className="absolute inset-0 opacity-5">
+          <div className="absolute inset-0 bg-gradient-to-r from-purple-600/10 to-pink-600/10"></div>
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-12 h-12 bg-purple-500/10 rounded-full blur-xl"></div>
+        </div>
         
-        <div className="space-y-4">
-          <div className="flex justify-between items-center">
-            <span className="text-sm text-gray-600">سرعة الرسائل</span>
+        <div className="flex items-center mb-4 relative">
+          <div className="w-8 h-8 bg-gradient-to-br from-purple-600 to-pink-600 rounded-lg flex items-center justify-center text-white mr-2 shadow-lg">
+            <i className="fas fa-cog text-sm"></i>
+          </div>
+          <h3 className="font-bold bg-gradient-to-r from-gray-800 via-purple-700 to-pink-700 bg-clip-text text-transparent">الإعدادات السريعة</h3>
+        </div>
+        
+        <div className="space-y-4 relative">
+          <div className="flex justify-between items-center p-3 bg-gradient-to-r from-white/80 to-purple-50/60 rounded-lg backdrop-blur-sm border border-purple-100/30 shadow-sm">
+            <span className="text-sm text-purple-700 font-medium flex items-center">
+              <i className="fas fa-tachometer-alt ml-2 text-purple-600"></i>
+              سرعة الرسائل
+            </span>
             <Select defaultValue={meeting.settings?.messageSpeed || 'medium'}>
-              <SelectTrigger className="w-20 h-8 text-xs">
+              <SelectTrigger className="w-24 h-8 text-xs bg-gradient-to-r from-white to-purple-50 border border-purple-200/50">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="slow">بطيء</SelectItem>
-                <SelectItem value="medium">متوسط</SelectItem>
-                <SelectItem value="fast">سريع</SelectItem>
+                <SelectItem value="slow">🐌 بطيء</SelectItem>
+                <SelectItem value="medium">⚡ متوسط</SelectItem>
+                <SelectItem value="fast">🚀 سريع</SelectItem>
               </SelectContent>
             </Select>
           </div>
           
-          <div className="flex justify-between items-center">
-            <span className="text-sm text-gray-600">نوع المحادثات</span>
+          <div className="flex justify-between items-center p-3 bg-gradient-to-r from-white/80 to-purple-50/60 rounded-lg backdrop-blur-sm border border-purple-100/30 shadow-sm">
+            <span className="text-sm text-purple-700 font-medium flex items-center">
+              <i className="fas fa-comments ml-2 text-purple-600"></i>
+              نوع المحادثات
+            </span>
             <Select defaultValue={meeting.settings?.conversationType || 'friendly'}>
-              <SelectTrigger className="w-20 h-8 text-xs">
+              <SelectTrigger className="w-24 h-8 text-xs bg-gradient-to-r from-white to-purple-50 border border-purple-200/50">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="formal">رسمية</SelectItem>
-                <SelectItem value="friendly">ودية</SelectItem>
-                <SelectItem value="technical">تقنية</SelectItem>
+                <SelectItem value="formal">👔 رسمية</SelectItem>
+                <SelectItem value="friendly">😊 ودية</SelectItem>
+                <SelectItem value="technical">💻 تقنية</SelectItem>
               </SelectContent>
             </Select>
           </div>
           
-          <div className="flex justify-between items-center">
-            <span className="text-sm text-gray-600">أصوات وهمية</span>
+          <div className="flex justify-between items-center p-3 bg-gradient-to-r from-white/80 to-purple-50/60 rounded-lg backdrop-blur-sm border border-purple-100/30 shadow-sm">
+            <span className="text-sm text-purple-700 font-medium flex items-center">
+              <i className="fas fa-volume-up ml-2 text-purple-600"></i>
+              أصوات وهمية
+            </span>
             <div className="relative">
               <input 
                 type="checkbox" 
                 defaultChecked={meeting.settings?.autoSounds || false}
                 className="sr-only peer"
               />
-              <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary"></div>
+              <div className="w-11 h-6 bg-gradient-to-r from-gray-200 to-purple-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-purple-500/50 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all after:shadow-lg peer-checked:bg-gradient-to-r peer-checked:from-purple-500 peer-checked:to-pink-500"></div>
             </div>
           </div>
         </div>
