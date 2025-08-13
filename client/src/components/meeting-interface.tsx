@@ -660,6 +660,19 @@ export default function MeetingInterface({ meeting, onLeave }: MeetingInterfaceP
 
                 <div className="relative group">
                   <Button
+                    onClick={() => setShowChat(!showChat)}
+                    className={`w-12 h-12 rounded-full transition-all duration-300 transform hover:scale-110 backdrop-blur-sm border shadow-lg ${
+                      showChat 
+                        ? 'bg-gradient-to-r from-green-600/80 to-emerald-600/60 hover:from-green-500/80 hover:to-emerald-500/60 text-white border-green-600/30 shadow-green-600/20' 
+                        : 'bg-gradient-to-r from-slate-600/80 to-purple-600/60 hover:from-slate-500/80 hover:to-purple-500/60 text-white border-purple-600/30 shadow-purple-600/20'
+                    }`}
+                  >
+                    <i className="fas fa-comments text-sm"></i>
+                  </Button>
+                </div>
+
+                <div className="relative group">
+                  <Button
                     onClick={shareInviteLink}
                     className="w-12 h-12 bg-gradient-to-r from-blue-600/80 to-purple-600/60 hover:from-blue-500/80 hover:to-purple-500/60 text-white rounded-full transition-all duration-300 transform hover:scale-110 backdrop-blur-sm border border-blue-600/30 shadow-lg shadow-blue-600/20"
                   >
@@ -743,6 +756,17 @@ export default function MeetingInterface({ meeting, onLeave }: MeetingInterfaceP
                 </Button>
 
                 <Button
+                  onClick={() => setShowChat(!showChat)}
+                  className={`w-12 h-12 rounded-full control-button transition-all duration-300 ${
+                    showChat 
+                      ? 'bg-green-600 hover:bg-green-500 text-white' 
+                      : 'bg-gray-700 hover:bg-gray-600 text-white'
+                  }`}
+                >
+                  <i className="fas fa-comments text-sm"></i>
+                </Button>
+
+                <Button
                   onClick={shareInviteLink}
                   className="w-12 h-12 bg-blue-600 hover:bg-blue-500 text-white rounded-full control-button transition-all duration-300 glass-effect"
                 >
@@ -811,15 +835,17 @@ export default function MeetingInterface({ meeting, onLeave }: MeetingInterfaceP
           
         </main>
         
-        {/* Desktop Chat Sidebar */}
-        <div className="hidden md:block">
-          <ChatSidebar 
-            meeting={meeting}
-            messages={messages}
-            onSendMessage={sendMessage}
-            setMessages={setMessages}
-          />
-        </div>
+        {/* Desktop Chat Sidebar - Show only when requested */}
+        {showChat && (
+          <div className="hidden md:block">
+            <ChatSidebar 
+              meeting={meeting}
+              messages={messages}
+              onSendMessage={sendMessage}
+              setMessages={setMessages}
+            />
+          </div>
+        )}
 
         {/* Desktop Participants Sidebar */}
         {showParticipants && (

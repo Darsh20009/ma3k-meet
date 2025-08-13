@@ -16,6 +16,9 @@ export default function ChatSidebar({ meeting, messages, onSendMessage, setMessa
   const [newMessage, setNewMessage] = useState("");
   const [isAutoEnabled, setIsAutoEnabled] = useState(true);
   const [typingParticipant, setTypingParticipant] = useState<string | null>(null);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [showCodeEditor, setShowCodeEditor] = useState(false);
+  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const autoMessageTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -114,6 +117,37 @@ export default function ChatSidebar({ meeting, messages, onSendMessage, setMessa
     if (autoMessageTimeoutRef.current) {
       clearTimeout(autoMessageTimeoutRef.current);
     }
+  };
+
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (!files) return;
+    
+    const fileList = Array.from(files);
+    setUploadedFiles(prev => [...prev, ...fileList]);
+    
+    fileList.forEach(file => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const content = e.target?.result as string;
+        const fileName = file.name;
+        const fileType = file.name.split('.').pop()?.toLowerCase();
+        
+        // Send file content as message with special formatting
+        const fileMessage = `📁 **${fileName}** (${fileType?.toUpperCase()})\n\`\`\`${fileType}\n${content.substring(0, 1000)}${content.length > 1000 ? '...\n[المحتوى مقطوع - الملف كبير]' : ''}\n\`\`\``;
+        
+        onSendMessage(fileMessage);
+      };
+      reader.readAsText(file);
+    });
+    
+    // Reset the input
+    event.target.value = '';
+  };
+
+  const insertEmoji = (emoji: string) => {
+    setNewMessage(prev => prev + emoji);
+    setShowEmojiPicker(false);
   };
 
   const downloadConversation = () => {
@@ -346,14 +380,47 @@ export default function ChatSidebar({ meeting, messages, onSendMessage, setMessa
         </div>
         
         <div className="flex justify-between items-center mt-3 relative">
-          <div className="flex items-center space-x-reverse space-x-4 text-sm">
-            <button className="text-purple-600 hover:text-purple-700 transition-colors duration-300 bg-white/50 px-2 py-1 rounded-lg hover:bg-white/80 backdrop-blur-sm border border-purple-200/30">
-              <i className="fas fa-paperclip ml-1"></i>
-              مرفق
+          <div className="flex items-center space-x-reverse space-x-3 text-sm">
+            {/* Enhanced File Upload */}
+            <div className="relative group">
+              <input
+                type="file"
+                accept=".html,.css,.js,.txt,.md,.json"
+                onChange={handleFileUpload}
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                multiple
+              />
+              <button className="relative text-purple-600 hover:text-white transition-all duration-300 bg-gradient-to-r from-white/80 to-purple-100/60 hover:from-purple-600 hover:to-pink-600 px-3 py-2 rounded-lg backdrop-blur-sm border border-purple-200/40 hover:border-purple-400/60 shadow-sm hover:shadow-lg group-hover:scale-105 transform">
+                <div className="absolute inset-0 opacity-20 group-hover:opacity-40 bg-gradient-to-r from-purple-600/20 to-pink-600/20 rounded-lg blur-sm transition-opacity duration-300"></div>
+                <div className="relative flex items-center">
+                  <i className="fas fa-cloud-upload-alt ml-2 group-hover:animate-bounce"></i>
+                  <span className="font-medium">رفع ملف</span>
+                </div>
+              </button>
+            </div>
+            
+            {/* Enhanced Emoji Picker */}
+            <button 
+              onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+              className="relative text-purple-600 hover:text-white transition-all duration-300 bg-gradient-to-r from-white/80 to-purple-100/60 hover:from-purple-600 hover:to-pink-600 px-3 py-2 rounded-lg backdrop-blur-sm border border-purple-200/40 hover:border-purple-400/60 shadow-sm hover:shadow-lg hover:scale-105 transform group"
+            >
+              <div className="absolute inset-0 opacity-20 group-hover:opacity-40 bg-gradient-to-r from-purple-600/20 to-pink-600/20 rounded-lg blur-sm transition-opacity duration-300"></div>
+              <div className="relative flex items-center">
+                <i className="fas fa-smile ml-2 group-hover:animate-pulse"></i>
+                <span className="font-medium">رموز</span>
+              </div>
             </button>
-            <button className="text-purple-600 hover:text-purple-700 transition-colors duration-300 bg-white/50 px-2 py-1 rounded-lg hover:bg-white/80 backdrop-blur-sm border border-purple-200/30">
-              <i className="fas fa-smile ml-1"></i>
-              رموز
+            
+            {/* Enhanced Code Sharing */}
+            <button 
+              onClick={() => setShowCodeEditor(!showCodeEditor)}
+              className="relative text-purple-600 hover:text-white transition-all duration-300 bg-gradient-to-r from-white/80 to-purple-100/60 hover:from-purple-600 hover:to-pink-600 px-3 py-2 rounded-lg backdrop-blur-sm border border-purple-200/40 hover:border-purple-400/60 shadow-sm hover:shadow-lg hover:scale-105 transform group"
+            >
+              <div className="absolute inset-0 opacity-20 group-hover:opacity-40 bg-gradient-to-r from-purple-600/20 to-pink-600/20 rounded-lg blur-sm transition-opacity duration-300"></div>
+              <div className="relative flex items-center">
+                <i className="fas fa-code ml-2 group-hover:animate-pulse"></i>
+                <span className="font-medium">كود</span>
+              </div>
             </button>
           </div>
           <div className="text-xs bg-white/60 px-3 py-1 rounded-full backdrop-blur-sm border border-purple-200/30">
@@ -363,6 +430,89 @@ export default function ChatSidebar({ meeting, messages, onSendMessage, setMessa
             </span>
           </div>
         </div>
+        
+        {/* Enhanced Emoji Picker Modal */}
+        {showEmojiPicker && (
+          <div className="absolute bottom-16 left-4 right-4 bg-gradient-to-br from-white/95 via-purple-50/90 to-pink-50/80 border border-purple-200/60 rounded-xl p-4 shadow-2xl backdrop-blur-lg z-50">
+            <div className="absolute -inset-1 bg-gradient-to-r from-purple-600/20 to-pink-600/20 rounded-xl blur opacity-30"></div>
+            <div className="relative">
+              <h4 className="text-sm font-medium text-purple-700 mb-3 flex items-center">
+                <i className="fas fa-smile text-purple-600 ml-2"></i>
+                اختر رمزاً تعبيرياً
+              </h4>
+              <div className="grid grid-cols-8 gap-2 max-h-32 overflow-y-auto">
+                {['😀', '😂', '🥰', '😎', '🤔', '👍', '👏', '🎉', '💡', '🔥', '✨', '💪', '🚀', '💯', '❤️', '🌟', '👌', '🙌', '🎯', '⭐', '🎈', '🎊', '🌈', '💖'].map(emoji => (
+                  <button
+                    key={emoji}
+                    onClick={() => insertEmoji(emoji)}
+                    className="w-8 h-8 text-lg hover:bg-purple-100/60 rounded-lg transition-all duration-200 hover:scale-110 transform flex items-center justify-center"
+                  >
+                    {emoji}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Enhanced Code Editor Modal */}
+        {showCodeEditor && (
+          <div className="absolute bottom-16 left-4 right-4 bg-gradient-to-br from-white/95 via-purple-50/90 to-pink-50/80 border border-purple-200/60 rounded-xl p-4 shadow-2xl backdrop-blur-lg z-50 max-h-96">
+            <div className="absolute -inset-1 bg-gradient-to-r from-purple-600/20 to-pink-600/20 rounded-xl blur opacity-30"></div>
+            <div className="relative">
+              <div className="flex items-center justify-between mb-3">
+                <h4 className="text-sm font-medium text-purple-700 flex items-center">
+                  <i className="fas fa-code text-purple-600 ml-2"></i>
+                  مشاركة الكود
+                </h4>
+                <button 
+                  onClick={() => setShowCodeEditor(false)}
+                  className="text-gray-500 hover:text-purple-600 transition-colors"
+                >
+                  <i className="fas fa-times"></i>
+                </button>
+              </div>
+              <div className="space-y-3">
+                <select className="w-full px-3 py-2 bg-white/80 border border-purple-200/50 rounded-lg text-sm focus:ring-2 focus:ring-purple-500/30 focus:border-purple-400">
+                  <option value="html">HTML</option>
+                  <option value="css">CSS</option>
+                  <option value="javascript">JavaScript</option>
+                  <option value="typescript">TypeScript</option>
+                  <option value="json">JSON</option>
+                </select>
+                <textarea 
+                  placeholder="الصق الكود هنا..."
+                  className="w-full h-32 px-3 py-2 bg-white/80 border border-purple-200/50 rounded-lg text-sm font-mono resize-none focus:ring-2 focus:ring-purple-500/30 focus:border-purple-400"
+                  dir="ltr"
+                  id="codeTextarea"
+                />
+                <div className="flex justify-end space-x-reverse space-x-2">
+                  <button 
+                    onClick={() => setShowCodeEditor(false)}
+                    className="px-3 py-2 text-sm text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+                  >
+                    إلغاء
+                  </button>
+                  <button 
+                    onClick={() => {
+                      const textarea = document.getElementById('codeTextarea') as HTMLTextAreaElement;
+                      const select = textarea?.parentNode?.querySelector('select') as HTMLSelectElement;
+                      if (textarea?.value.trim()) {
+                        const codeMessage = `💻 **مشاركة كود ${select?.value?.toUpperCase() || 'CODE'}:**\n\`\`\`${select?.value || 'text'}\n${textarea.value}\n\`\`\``;
+                        onSendMessage(codeMessage);
+                        textarea.value = '';
+                        setShowCodeEditor(false);
+                      }
+                    }}
+                    className="px-3 py-2 text-sm text-white bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 rounded-lg transition-all duration-300 shadow-lg"
+                  >
+                    مشاركة الكود
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
       
     </aside>
