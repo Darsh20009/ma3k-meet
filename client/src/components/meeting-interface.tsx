@@ -286,79 +286,127 @@ export default function MeetingInterface({ meeting, onLeave }: MeetingInterfaceP
       dir="rtl"
     >
       
-      {/* Mobile Header - Always visible */}
-      <header className="md:hidden bg-gradient-to-r from-gray-800 to-gray-900 px-4 py-3 flex justify-between items-center relative z-50">
-        <div className="flex items-center">
-          <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-            <i className="fas fa-video text-white text-sm"></i>
-          </div>
-          <span className="mr-2 text-white font-semibold text-sm">معك ميتيجس</span>
+      {/* Mobile Header - Enhanced Creative Design */}
+      <header className="md:hidden bg-gradient-to-r from-slate-900 via-purple-900 to-slate-900 border-b border-purple-800/30 px-4 py-3 flex justify-between items-center relative z-50 backdrop-blur-lg">
+        {/* Background Pattern - Mobile */}
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 via-purple-600/20 to-pink-600/20 animate-pulse"></div>
+          <div className="absolute top-0 left-1/3 w-32 h-32 bg-purple-500/20 rounded-full blur-2xl animate-pulse"></div>
+          <div className="absolute top-0 right-1/3 w-40 h-40 bg-blue-500/20 rounded-full blur-2xl animate-pulse delay-75"></div>
         </div>
         
-        <div className="flex items-center space-x-reverse space-x-2">
+        <div className="flex items-center relative">
+          <div className="relative group">
+            <div className="absolute -inset-0.5 bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg blur opacity-75 group-hover:opacity-100 transition duration-300 animate-pulse"></div>
+            <div className="relative w-8 h-8 bg-gradient-to-br from-purple-600 via-blue-600 to-pink-600 rounded-lg flex items-center justify-center text-white font-bold shadow-lg">
+              <i className="fas fa-video text-white text-sm relative z-10"></i>
+            </div>
+          </div>
+          <div className="mr-2 text-white">
+            <h1 className="text-sm font-bold bg-gradient-to-r from-white via-purple-200 to-pink-200 bg-clip-text text-transparent">
+              Meet powered by ma3k
+            </h1>
+          </div>
+        </div>
+        
+        <div className="flex items-center space-x-reverse space-x-2 relative">
           <Button 
             onClick={toggleChat}
-            className={`w-10 h-10 rounded-full ${showChat ? 'bg-primary' : 'bg-gray-700'} text-white control-button`}
+            className={`relative group w-10 h-10 rounded-full transition-all duration-300 control-button ${
+              showChat 
+                ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-600/30' 
+                : 'bg-gradient-to-r from-gray-700/50 to-gray-600/50 text-gray-300 hover:text-white backdrop-blur-sm border border-gray-600/30'
+            }`}
           >
-            <i className="fas fa-comments text-sm"></i>
+            <div className="absolute inset-0 bg-gradient-to-r from-purple-600/0 to-pink-600/0 group-hover:from-purple-600/10 group-hover:to-pink-600/10 rounded-full transition-all duration-300"></div>
+            <i className="fas fa-comments text-sm relative z-10"></i>
           </Button>
+          
           <Button 
             onClick={shareInviteLink}
-            className="w-10 h-10 rounded-full bg-blue-600 hover:bg-blue-500 text-white control-button"
+            className="relative group w-10 h-10 rounded-full bg-gradient-to-r from-blue-600/80 to-purple-600/80 hover:from-blue-500 hover:to-purple-500 text-white control-button transition-all duration-300 shadow-lg shadow-blue-600/20"
           >
-            <i className="fas fa-share text-sm"></i>
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-600/0 to-purple-600/0 group-hover:from-blue-600/10 group-hover:to-purple-600/10 rounded-full transition-all duration-300"></div>
+            <i className="fas fa-share text-sm relative z-10"></i>
           </Button>
+          
           <Button 
             onClick={toggleControlsPanel}
-            className={`w-10 h-10 rounded-full ${showControls ? 'bg-primary' : 'bg-gray-700'} text-white control-button`}
+            className={`relative group w-10 h-10 rounded-full transition-all duration-300 control-button ${
+              showControls 
+                ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-600/30' 
+                : 'bg-gradient-to-r from-gray-700/50 to-gray-600/50 text-gray-300 hover:text-white backdrop-blur-sm border border-gray-600/30'
+            }`}
           >
-            <i className="fas fa-sliders-h text-sm"></i>
+            <div className="absolute inset-0 bg-gradient-to-r from-purple-600/0 to-pink-600/0 group-hover:from-purple-600/10 group-hover:to-pink-600/10 rounded-full transition-all duration-300"></div>
+            <i className="fas fa-sliders-h text-sm relative z-10"></i>
           </Button>
         </div>
       </header>
 
-      {/* Desktop Header */}
-      <header className="hidden md:flex bg-white border-b border-gray-200 px-6 py-4 justify-between items-center relative z-10">
-        <div className="flex items-center space-x-reverse space-x-4">
+      {/* Desktop Header - Enhanced Creative Design */}
+      <header className="hidden md:flex bg-gradient-to-r from-slate-900 via-purple-900 to-slate-900 border-b border-purple-800/30 px-6 py-4 justify-between items-center relative z-10 backdrop-blur-lg">
+        {/* Background Pattern */}
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 via-purple-600/20 to-pink-600/20 animate-pulse"></div>
+          <div className="absolute top-0 left-1/4 w-72 h-72 bg-purple-500/10 rounded-full blur-3xl animate-pulse"></div>
+          <div className="absolute top-0 right-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-pulse delay-75"></div>
+        </div>
+        
+        <div className="flex items-center space-x-reverse space-x-4 relative">
           <div className="flex items-center">
-            <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center text-white font-bold text-lg">
-              مع
+            <div className="relative group">
+              <div className="absolute -inset-1 bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl blur opacity-75 group-hover:opacity-100 transition duration-300 animate-pulse"></div>
+              <div className="relative w-12 h-12 bg-gradient-to-br from-purple-600 via-blue-600 to-pink-600 rounded-xl flex items-center justify-center text-white font-bold text-lg shadow-xl">
+                <span className="relative z-10">مع</span>
+              </div>
             </div>
-            <span className="mr-3 text-xl font-bold text-gray-800">معك ميتيجس</span>
+            <div className="mr-4 text-white">
+              <h1 className="text-2xl font-bold bg-gradient-to-r from-white via-purple-200 to-pink-200 bg-clip-text text-transparent">
+                Meet powered by ma3k
+              </h1>
+              <p className="text-sm text-gray-300 opacity-80">منصة الاجتماعات الذكية</p>
+            </div>
           </div>
         </div>
         
-        <div className="flex items-center space-x-reverse space-x-4">
-          <div className="flex items-center bg-success/10 text-success px-3 py-1 rounded-full text-sm">
-            <div className="w-2 h-2 bg-success rounded-full ml-2 animate-pulse"></div>
-            <span>{isConnected ? 'متصل' : 'غير متصل'}</span>
+        <div className="flex items-center space-x-reverse space-x-4 relative">
+          <div className="flex items-center bg-gradient-to-r from-emerald-500/20 to-green-500/20 text-emerald-300 px-4 py-2 rounded-full text-sm backdrop-blur-sm border border-emerald-500/30">
+            <div className="w-2 h-2 bg-emerald-400 rounded-full ml-2 animate-pulse shadow-lg shadow-emerald-400/50"></div>
+            <span className="font-medium">{isConnected ? 'متصل بنجاح' : 'غير متصل'}</span>
           </div>
+          
           <Button 
-            variant="outline" 
+            variant="ghost" 
             size="sm"
             onClick={shareInviteLink}
-            className="text-primary hover:text-primary/80 hover:bg-primary/5"
+            className="relative group bg-gradient-to-r from-blue-600/20 to-purple-600/20 text-white hover:from-blue-500/30 hover:to-purple-500/30 border border-blue-500/30 hover:border-blue-400/50 transition-all duration-300"
           >
-            <i className="fas fa-share ml-2"></i>
-            مشاركة
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-600/0 to-purple-600/0 group-hover:from-blue-600/10 group-hover:to-purple-600/10 rounded-md transition-all duration-300"></div>
+            <i className="fas fa-share ml-2 relative z-10"></i>
+            <span className="relative z-10">مشاركة</span>
           </Button>
+          
           <Button 
-            variant="outline" 
+            variant="ghost" 
             size="sm"
             onClick={toggleFullscreen}
-            className="text-gray-600 hover:text-gray-700 hover:bg-gray-50"
+            className="relative group bg-gradient-to-r from-purple-600/20 to-pink-600/20 text-white hover:from-purple-500/30 hover:to-pink-500/30 border border-purple-500/30 hover:border-purple-400/50 transition-all duration-300"
           >
-            <i className={`fas ${isFullscreen ? 'fa-compress' : 'fa-expand'} ml-2`}></i>
-            {isFullscreen ? 'تصغير' : 'ملء الشاشة'}
+            <div className="absolute inset-0 bg-gradient-to-r from-purple-600/0 to-pink-600/0 group-hover:from-purple-600/10 group-hover:to-pink-600/10 rounded-md transition-all duration-300"></div>
+            <i className={`fas ${isFullscreen ? 'fa-compress' : 'fa-expand'} ml-2 relative z-10`}></i>
+            <span className="relative z-10">{isFullscreen ? 'تصغير' : 'ملء الشاشة'}</span>
           </Button>
+          
           <Button 
-            variant="outline" 
+            variant="ghost" 
             size="sm"
             onClick={onLeave}
-            className="text-red-600 hover:text-red-700 hover:bg-red-50"
+            className="relative group bg-gradient-to-r from-red-600/20 to-pink-600/20 text-white hover:from-red-500/30 hover:to-pink-500/30 border border-red-500/30 hover:border-red-400/50 transition-all duration-300"
           >
-            <i className="fas fa-sign-out-alt ml-2"></i>
-            مغادرة
+            <div className="absolute inset-0 bg-gradient-to-r from-red-600/0 to-pink-600/0 group-hover:from-red-600/10 group-hover:to-pink-600/10 rounded-md transition-all duration-300"></div>
+            <i className="fas fa-sign-out-alt ml-2 relative z-10"></i>
+            <span className="relative z-10">مغادرة</span>
           </Button>
         </div>
       </header>
