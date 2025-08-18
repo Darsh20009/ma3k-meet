@@ -12,7 +12,7 @@ interface Data {
 
 export class JSONStorage {
   private dataFile = 'server/data.json';
-  private data: Data;
+  private data: Data = { meetings: [], participants: [], realUsers: [], messages: [], activeSessions: {} };
 
   constructor() {
     this.loadData();
@@ -58,19 +58,26 @@ export class JSONStorage {
       allowScreenShare: insertMeeting.allowScreenShare !== undefined ? insertMeeting.allowScreenShare : true,
       allowChat: insertMeeting.allowChat !== undefined ? insertMeeting.allowChat : true,
       muteOnJoin: insertMeeting.muteOnJoin || false,
-      settings: insertMeeting.settings || { 
-        messageSpeed: "medium" as const, 
-        conversationType: "friendly" as const, 
-        autoSounds: false,
-        virtualParticipantsEnabled: true,
-        backgroundEffects: true,
-        reactionAnimations: true
+      isActive: true,
+      settings: {
+        messageSpeed: insertMeeting.settings?.messageSpeed || "medium",
+        conversationType: insertMeeting.settings?.conversationType || "friendly",
+        autoSounds: insertMeeting.settings?.autoSounds || false,
+        virtualParticipantsEnabled: insertMeeting.settings?.virtualParticipantsEnabled !== undefined ? insertMeeting.settings.virtualParticipantsEnabled : true,
+        backgroundEffects: insertMeeting.settings?.backgroundEffects !== undefined ? insertMeeting.settings.backgroundEffects : true,
+        reactionAnimations: insertMeeting.settings?.reactionAnimations !== undefined ? insertMeeting.settings.reactionAnimations : true
       },
       createdAt: new Date()
     };
     
     this.data.meetings.push(newMeeting);
     this.data.activeSessions[newMeeting.id] = {};
+    
+    // Automatically add default virtual participants if enabled
+    if (newMeeting.settings && newMeeting.settings.virtualParticipantsEnabled) {
+      await this.addDefaultVirtualParticipants(newMeeting.id);
+    }
+    
     this.saveData();
     
     return newMeeting;
@@ -114,13 +121,11 @@ export class JSONStorage {
   async addParticipant(participant: InsertParticipant): Promise<VirtualParticipant> {
     const newParticipant: VirtualParticipant = {
       id: randomUUID(),
-      meetingId: participant.meetingId || '',
+      meetingId: participant.meetingId || null,
       name: participant.name,
       avatar: participant.avatar,
       status: participant.status || 'active',
-      joinedAt: new Date(),
-      isOnline: participant.isOnline !== undefined ? participant.isOnline : true,
-      isHost: participant.isHost || false
+      personality: participant.personality || 'professional'
     };
     
     this.data.participants.push(newParticipant);
@@ -237,7 +242,11 @@ export class JSONStorage {
   async getMessages(meetingId: string): Promise<ChatMessage[]> {
     return this.data.messages
       .filter(m => m.meetingId === meetingId)
-      .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+      .sort((a, b) => {
+        const timeA = a.timestamp ? new Date(a.timestamp).getTime() : 0;
+        const timeB = b.timestamp ? new Date(b.timestamp).getTime() : 0;
+        return timeA - timeB;
+      });
   }
 
   async deleteMessage(id: string): Promise<boolean> {
@@ -267,6 +276,57 @@ export class JSONStorage {
       delete this.data.activeSessions[meetingId][sessionId];
       this.saveData();
     }
+  }
+
+  // Add default virtual participants to a new meeting
+  async addDefaultVirtualParticipants(meetingId: string): Promise<VirtualParticipant[]> {
+    const defaultParticipants = [
+      {
+        name: 'أحمد المهندس',
+        avatar: '👨‍💼',
+        personality: 'professional',
+        status: 'active'
+      },
+      {
+        name: 'فاطمة المصممة',
+        avatar: '👩‍🎨',
+        personality: 'creative',
+        status: 'active'
+      },
+      {
+        name: 'محمد المطور',
+        avatar: '👨‍💻',
+        personality: 'technical',
+        status: 'active'
+      },
+      {
+        name: 'نور المديرة',
+        avatar: '👩‍💼',
+        personality: 'manager',
+        status: 'active'
+      },
+      {
+        name: 'سارة المسوقة',
+        avatar: '👩‍💻',
+        personality: 'friendly',
+        status: 'active'
+      }
+    ];
+
+    const addedParticipants: VirtualParticipant[] = [];
+
+    for (const participantData of defaultParticipants) {
+      const participant = await this.addParticipant({
+        meetingId: meetingId,
+        name: participantData.name,
+        avatar: participantData.avatar,
+        personality: participantData.personality,
+        status: participantData.status
+      });
+      addedParticipants.push(participant);
+    }
+
+    return addedParticipants;
   }
 }
 
