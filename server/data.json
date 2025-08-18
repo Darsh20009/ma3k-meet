@@ -131,9 +131,75 @@
         "autoSounds": false
       },
       "createdAt": "2025-08-13T09:05:19.698Z"
+    },
+    {
+      "id": "699acba2-9b69-4a54-b3f7-b01c82e0300f",
+      "name": "ي",
+      "type": "اجتماع عمل",
+      "meetingCode": "988518",
+      "hostId": "anonymous-host",
+      "password": null,
+      "isPasswordProtected": false,
+      "maxParticipants": 100,
+      "waitingRoom": false,
+      "recordMeeting": false,
+      "allowScreenShare": true,
+      "allowChat": true,
+      "muteOnJoin": false,
+      "isActive": true,
+      "settings": {
+        "messageSpeed": "medium",
+        "conversationType": "friendly",
+        "autoSounds": false,
+        "virtualParticipantsEnabled": true,
+        "backgroundEffects": true,
+        "reactionAnimations": true
+      },
+      "createdAt": "2025-08-18T09:06:14.280Z"
     }
   ],
-  "participants": [],
+  "participants": [
+    {
+      "id": "d75c3eb5-9658-411d-9cfb-ac78addf878f",
+      "meetingId": "699acba2-9b69-4a54-b3f7-b01c82e0300f",
+      "name": "أحمد المهندس",
+      "avatar": "👨‍💼",
+      "status": "active",
+      "personality": "professional"
+    },
+    {
+      "id": "93c3c8e3-46ad-4c3c-b6d9-ca071d579f08",
+      "meetingId": "699acba2-9b69-4a54-b3f7-b01c82e0300f",
+      "name": "فاطمة المصممة",
+      "avatar": "👩‍🎨",
+      "status": "active",
+      "personality": "creative"
+    },
+    {
+      "id": "39085b72-dd2a-4b98-9989-4779bfe46f97",
+      "meetingId": "699acba2-9b69-4a54-b3f7-b01c82e0300f",
+      "name": "محمد المطور",
+      "avatar": "👨‍💻",
+      "status": "active",
+      "personality": "technical"
+    },
+    {
+      "id": "549117b7-6626-4bd9-9c28-2286e1e8374c",
+      "meetingId": "699acba2-9b69-4a54-b3f7-b01c82e0300f",
+      "name": "نور المديرة",
+      "avatar": "👩‍💼",
+      "status": "active",
+      "personality": "manager"
+    },
+    {
+      "id": "a3514c4e-1da0-47b0-91ae-40bfc066d3a2",
+      "meetingId": "699acba2-9b69-4a54-b3f7-b01c82e0300f",
+      "name": "سارة المسوقة",
+      "avatar": "👩‍💻",
+      "status": "active",
+      "personality": "friendly"
+    }
+  ],
   "realUsers": [],
   "messages": [],
   "activeSessions": {
@@ -142,6 +208,7 @@
     "a716e797-b942-475b-a067-c42116563446": {},
     "6fb2bb89-f11f-439b-9d51-f8942e480844": {},
     "6ce0aa79-5574-442c-b3ef-e022f5e3df33": {},
-    "4bd45567-4a0b-4f52-8d21-8f423740ad8a": {}
+    "4bd45567-4a0b-4f52-8d21-8f423740ad8a": {},
+    "699acba2-9b69-4a54-b3f7-b01c82e0300f": {}
   }
 }

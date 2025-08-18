@@ -6,8 +6,10 @@ import ParticipantManagement from "./participant-management";
 import ChatSidebar from "./chat-sidebar";
 import MeetingCodeDisplay from "./meeting-code-display";
 import QuickReactions from "./quick-reactions";
+import VirtualParticipantsControlPanel, { VirtualParticipantSettings } from "./virtual-participants-control-panel";
 import { useWebSocket } from "@/hooks/use-websocket";
 import type { Meeting, VirtualParticipant } from "@shared/schema";
+import { RealisticBehaviorSimulator, VirtualParticipantMessageGenerator } from "@/lib/realistic-behavior";
 
 interface MeetingInterfaceProps {
   meeting: Meeting;
@@ -34,6 +36,12 @@ export default function MeetingInterface({ meeting, onLeave }: MeetingInterfaceP
   
   // Session users tracking for real-time collaboration
   const [sessionUsers, setSessionUsers] = useState<{id: string, name: string, joinedAt: Date}[]>([]);
+  
+  // Realistic behavior simulation
+  const [behaviorSimulator, setBehaviorSimulator] = useState<RealisticBehaviorSimulator | null>(null);
+  const [messageGenerator, setMessageGenerator] = useState<VirtualParticipantMessageGenerator | null>(null);
+  const [showVirtualControlPanel, setShowVirtualControlPanel] = useState(false);
+  const [virtualSettings, setVirtualSettings] = useState<VirtualParticipantSettings | null>(null);
 
   // Meeting timer
   useEffect(() => {
@@ -86,6 +94,33 @@ export default function MeetingInterface({ meeting, onLeave }: MeetingInterfaceP
   useEffect(() => {
     setSessionUsers(sessionUsersData);
   }, [sessionUsersData]);
+
+  // Initialize realistic behavior simulation when participants are loaded
+  useEffect(() => {
+    if (participants.length > 0) {
+      // Initialize behavior simulator
+      const simulator = new RealisticBehaviorSimulator(participants);
+      setBehaviorSimulator(simulator);
+
+      // Initialize message generator
+      const generator = new VirtualParticipantMessageGenerator(
+        participants,
+        (participantId: string, message: string) => {
+          const participant = participants.find(p => p.id === participantId);
+          if (participant) {
+            sendMessage(message, participant.name, participant.avatar);
+          }
+        }
+      );
+      setMessageGenerator(generator);
+
+      // Cleanup on unmount
+      return () => {
+        simulator.destroy();
+        generator.destroy();
+      };
+    }
+  }, [participants, sendMessage]);
 
   const formatDuration = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);
@@ -239,6 +274,7 @@ export default function MeetingInterface({ meeting, onLeave }: MeetingInterfaceP
   const toggleParticipants = () => setShowParticipants(!showParticipants);
   const toggleChat = () => setShowChat(!showChat);
   const toggleControlsPanel = () => setShowControls(!showControls);
+  const toggleVirtualControlPanel = () => setShowVirtualControlPanel(!showVirtualControlPanel);
 
   const toggleFullscreen = async () => {
     if (!document.fullscreenElement) {
@@ -287,6 +323,72 @@ export default function MeetingInterface({ meeting, onLeave }: MeetingInterfaceP
     
     // Final fallback: show dialog
     setShowShareDialog(true);
+  };
+
+  // Virtual participants control functions
+  const handleToggleVirtualParticipant = async (participantId: string, isActive: boolean) => {
+    try {
+      const response = await fetch(`/api/meetings/${meeting.id}/participants/${participantId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: isActive ? 'active' : 'away' })
+      });
+      
+      if (response.ok) {
+        toast({
+          title: "تم تحديث المشارك",
+          description: `تم ${isActive ? 'تفعيل' : 'إيقاف'} المشارك بنجاح`,
+        });
+      }
+    } catch (error) {
+      console.error('Error toggling participant:', error);
+    }
+  };
+
+  const handleUpdateVirtualSettings = (settings: VirtualParticipantSettings) => {
+    setVirtualSettings(settings);
+    if (behaviorSimulator && settings.realisticBehavior) {
+      console.log('Updating virtual participant settings:', settings);
+    }
+  };
+
+  const handleGenerateVirtualMessage = (participantId: string) => {
+    if (messageGenerator) {
+      const participant = participants.find(p => p.id === participantId);
+      if (participant) {
+        const personalityMessages = {
+          professional: ['أقترح مراجعة هذه النقطة بتفصيل أكثر', 'من وجهة نظر مهنية، هذا الاقتراح ممتاز'],
+          creative: ['لدي فكرة إبداعية حول هذا الموضوع! 🎨', 'ما رأيكم لو أضفنا لمسة مبتكرة؟'],
+          technical: ['تقنياً، يمكننا تحسين هذا الحل', 'نحتاج لمراجعة الأداء والـ scalability'],
+          manager: ['دعونا نحدد الأولويات والجدول الزمني', 'ما هي المخاطر المحتملة؟'],
+          friendly: ['أحب هذا التوجه! 😊', 'شكراً لكم على هذا الطرح المفيد']
+        };
+        
+        const messages = personalityMessages[participant.personality as keyof typeof personalityMessages] || personalityMessages.friendly;
+        const randomMessage = messages[Math.floor(Math.random() * messages.length)];
+        
+        sendMessage(randomMessage, participant.name, participant.avatar);
+        
+        toast({
+          title: "تم إرسال رسالة",
+          description: `أرسل ${participant.name} رسالة جديدة`,
+        });
+      }
+    }
+  };
+
+  const handleResetVirtualBehavior = () => {
+    if (behaviorSimulator) {
+      behaviorSimulator.destroy();
+      
+      const newSimulator = new RealisticBehaviorSimulator(participants);
+      setBehaviorSimulator(newSimulator);
+      
+      toast({
+        title: "تم إعادة تعيين السلوك",
+        description: "تم إعادة تعيين سلوك المشاركين الافتراضيين",
+      });
+    }
   };
 
   // Listen for fullscreen changes
@@ -540,71 +642,158 @@ export default function MeetingInterface({ meeting, onLeave }: MeetingInterfaceP
               )}
             </div>
             
-            {/* Virtual Participants - Dynamic rendering */}
+            {/* Enhanced Virtual Participants - More Realistic and Creative */}
             {(() => {
               const { data: participants = [] } = useQuery<VirtualParticipant[]>({
                 queryKey: ['/api/meetings', meeting.id, 'participants'],
               });
 
               return participants.slice(0, 4).map((participant, index) => {
-                const colors = [
-                  'from-green-500 to-teal-500',
-                  'from-blue-500 to-purple-500',
-                  'from-orange-500 to-red-500',
-                  'from-purple-500 to-pink-500'
-                ];
+                // More diverse and vibrant color schemes based on personality
+                const personalityColors = {
+                  professional: 'from-slate-600 via-blue-600 to-slate-700',
+                  creative: 'from-pink-500 via-purple-500 to-violet-600',
+                  technical: 'from-cyan-500 via-blue-500 to-indigo-600',
+                  manager: 'from-amber-500 via-orange-500 to-red-600',
+                  friendly: 'from-green-500 via-emerald-500 to-teal-600'
+                };
+                
+                const bgColor = personalityColors[participant.personality as keyof typeof personalityColors] || 'from-gray-500 via-slate-500 to-gray-600';
+                
+                // Get realistic behavior from simulator
+                const behavior = behaviorSimulator?.getBehavior(participant.id);
+                const isCurrentlySpeaking = behavior?.isCurrentlySpeaking || false;
+                const hasRecentActivity = behavior?.hasRecentActivity || false;
+                const activityDescription = behavior?.activityDescription || '';
+                const connectionQuality = behavior?.connectionQuality || 'good';
+                const isCameraOn = behavior?.isCameraOn || true;
+                const isMuted = behavior?.isMuted || false;
                 
                 return (
                   <div 
                     key={participant.id} 
-                    className="bg-gradient-to-br from-slate-800/80 via-purple-900/40 to-slate-800/80 rounded-xl relative p-4 participant-card backdrop-blur-lg border border-purple-700/30 shadow-xl shadow-purple-900/20 hover:shadow-purple-800/30 transition-all duration-300 cursor-pointer overflow-hidden"
+                    className={`bg-gradient-to-br from-slate-800/90 via-purple-900/50 to-slate-800/90 rounded-2xl relative p-4 participant-card backdrop-blur-lg border border-purple-700/40 shadow-2xl shadow-purple-900/30 hover:shadow-purple-800/40 transition-all duration-500 cursor-pointer overflow-hidden group ${
+                      isCurrentlySpeaking ? 'ring-2 ring-green-400/60 ring-offset-2 ring-offset-transparent animate-pulse' : ''
+                    }`}
                     onClick={() => {
-                      // Future: Implement participant focus/zoom
+                      // Simulate focusing on participant
+                      console.log(`Focusing on ${participant.name}`);
                     }}
                   >
-                    {/* Participant Background Pattern */}
-                    <div className="absolute inset-0 opacity-20">
-                      <div className={`absolute inset-0 bg-gradient-to-br ${colors[index % colors.length].replace('from-', 'from-').replace('to-', 'to-')}/20`}></div>
-                      <div className="absolute top-0 right-0 w-20 h-20 bg-purple-500/10 rounded-full blur-xl animate-pulse"></div>
-                      <div className="absolute bottom-0 left-0 w-16 h-16 bg-blue-500/10 rounded-full blur-xl animate-pulse delay-75"></div>
+                    {/* Enhanced Background Pattern with Personality */}
+                    <div className="absolute inset-0 opacity-30">
+                      <div className={`absolute inset-0 bg-gradient-to-br ${bgColor}/25`}></div>
+                      <div className="absolute top-1/4 right-1/4 w-24 h-24 bg-purple-500/15 rounded-full blur-2xl animate-pulse"></div>
+                      <div className="absolute bottom-1/4 left-1/4 w-32 h-32 bg-blue-500/15 rounded-full blur-2xl animate-pulse delay-100"></div>
+                      <div className="absolute top-3/4 right-1/3 w-20 h-20 bg-pink-500/10 rounded-full blur-xl animate-pulse delay-200"></div>
                     </div>
+                    
+                    {/* Speaking Indicator Animation */}
+                    {isCurrentlySpeaking && (
+                      <div className="absolute inset-0 rounded-2xl">
+                        <div className="absolute inset-0 bg-gradient-to-r from-green-400/10 via-emerald-400/20 to-green-400/10 rounded-2xl animate-pulse"></div>
+                        <div className="absolute top-2 right-2 flex space-x-1">
+                          <div className="w-2 h-2 bg-green-400 rounded-full animate-bounce"></div>
+                          <div className="w-2 h-2 bg-green-400 rounded-full animate-bounce delay-75"></div>
+                          <div className="w-2 h-2 bg-green-400 rounded-full animate-bounce delay-150"></div>
+                        </div>
+                      </div>
+                    )}
                     
                     <div className="absolute inset-0 flex items-center justify-center relative">
                       <div className="text-center">
                         <div className="relative group">
-                          <div className={`absolute -inset-1 bg-gradient-to-r ${colors[index % colors.length]} rounded-full blur opacity-75 group-hover:opacity-100 transition duration-300 animate-pulse`}></div>
-                          <div className={`relative w-16 h-16 bg-gradient-to-br ${colors[index % colors.length]} rounded-full mx-auto flex items-center justify-center text-white font-bold mb-2 shadow-2xl`}>
+                          {/* Enhanced Avatar with Personality-based Effects */}
+                          <div className={`absolute -inset-2 bg-gradient-to-r ${bgColor} rounded-full blur opacity-60 group-hover:opacity-90 transition duration-500 ${hasRecentActivity ? 'animate-pulse' : ''}`}></div>
+                          <div className={`relative w-20 h-20 bg-gradient-to-br ${bgColor} rounded-full mx-auto flex items-center justify-center text-white font-bold mb-3 shadow-2xl text-2xl transform transition-all duration-300 group-hover:scale-110 ${isCurrentlySpeaking ? 'scale-105' : ''}`}>
                             {participant.avatar}
                           </div>
+                          
+                          {/* Personality Badge */}
+                          <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-gradient-to-br from-white to-gray-200 rounded-full flex items-center justify-center text-xs border-2 border-white shadow-lg">
+                            {participant.personality === 'professional' && '💼'}
+                            {participant.personality === 'creative' && '🎨'}
+                            {participant.personality === 'technical' && '⚡'}
+                            {participant.personality === 'manager' && '👑'}
+                            {participant.personality === 'friendly' && '😊'}
+                          </div>
                         </div>
-                        <h4 className="text-white font-bold bg-gradient-to-r from-white via-purple-200 to-pink-200 bg-clip-text text-transparent">{participant.name}</h4>
-                        <span className={`text-xs px-3 py-1.5 rounded-full mt-2 inline-block backdrop-blur-sm border transition-all duration-300 ${
-                          participant.status === 'active' 
-                            ? 'bg-gradient-to-r from-emerald-500/20 to-green-500/20 text-emerald-300 border-emerald-500/40 shadow-sm' :
-                          participant.status === 'away' 
-                            ? 'bg-gradient-to-r from-yellow-500/20 to-orange-500/20 text-yellow-300 border-yellow-500/40 shadow-sm' :
-                            'bg-gradient-to-r from-gray-600/20 to-gray-500/20 text-gray-300 border-gray-500/40'
-                        }`}>
-                          <i className={`fas ${
-                            participant.status === 'active' ? 'fa-circle text-green-400' :
-                            participant.status === 'away' ? 'fa-clock text-yellow-400' :
-                            'fa-circle-dot text-gray-400'
-                          } ml-1 text-xs animate-pulse`}></i>
-                          {participant.status === 'active' ? 'نشط' :
-                           participant.status === 'away' ? 'بعيد' : 'غير متصل'}
-                        </span>
+                        
+                        <h4 className="text-white font-bold text-sm bg-gradient-to-r from-white via-purple-200 to-pink-200 bg-clip-text text-transparent mb-1">{participant.name}</h4>
+                        
+                        {/* Enhanced Status with More Information */}
+                        <div className="flex flex-col items-center space-y-1">
+                          <span className={`text-xs px-3 py-1.5 rounded-full backdrop-blur-sm border transition-all duration-300 ${
+                            participant.status === 'active' 
+                              ? 'bg-gradient-to-r from-emerald-500/30 to-green-500/30 text-emerald-200 border-emerald-500/50 shadow-sm shadow-emerald-500/20' :
+                            participant.status === 'away' 
+                              ? 'bg-gradient-to-r from-yellow-500/30 to-orange-500/30 text-yellow-200 border-yellow-500/50 shadow-sm shadow-yellow-500/20' :
+                              'bg-gradient-to-r from-gray-600/30 to-gray-500/30 text-gray-200 border-gray-500/50'
+                          }`}>
+                            <i className={`fas ${
+                              participant.status === 'active' ? 'fa-circle text-green-400' :
+                              participant.status === 'away' ? 'fa-clock text-yellow-400' :
+                              'fa-circle-dot text-gray-400'
+                            } ml-1 text-xs ${isCurrentlySpeaking ? 'animate-pulse' : ''}`}></i>
+                            {participant.status === 'active' ? (isCurrentlySpeaking ? 'يتحدث' : 'نشط') :
+                             participant.status === 'away' ? 'بعيد' : 'غير متصل'}
+                          </span>
+                          
+                          {/* Realistic Activity Indicator */}
+                          {hasRecentActivity && (
+                            <span className="text-xs text-purple-300 opacity-75">
+                              {activityDescription}
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
-                    <div className="absolute top-3 left-3 bg-gradient-to-r from-black/50 to-purple-900/50 text-white px-3 py-1.5 rounded-lg text-xs backdrop-blur-sm border border-white/20">
-                      <i className="fas fa-user ml-1 text-purple-300"></i>
-                      {participant.name}
+                    
+                    {/* Enhanced Header with Professional Look */}
+                    <div className="absolute top-3 left-3 bg-gradient-to-r from-black/60 to-purple-900/60 text-white px-3 py-2 rounded-lg text-xs backdrop-blur-sm border border-white/30 shadow-lg">
+                      <div className="flex items-center">
+                        <i className="fas fa-user ml-1 text-purple-300"></i>
+                        <span className="font-medium">{participant.name}</span>
+                      </div>
                     </div>
-                    <div className={`absolute bottom-3 left-3 p-2 rounded-full backdrop-blur-sm border transition-all duration-300 ${
-                      participant.status === 'active' 
-                        ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white border-green-400/50 shadow-lg shadow-green-500/30' 
-                        : 'bg-gradient-to-r from-red-500 to-pink-500 text-white border-red-400/50 shadow-lg shadow-red-500/30'
+                    
+                    {/* Enhanced Microphone Status with Realistic Behavior */}
+                    <div className={`absolute bottom-3 left-3 p-2.5 rounded-full backdrop-blur-sm border transition-all duration-300 shadow-lg ${
+                      !isMuted && participant.status === 'active' 
+                        ? `bg-gradient-to-r from-green-500 to-emerald-500 text-white border-green-400/60 shadow-green-500/40 ${isCurrentlySpeaking ? 'animate-pulse scale-110' : ''}` 
+                        : 'bg-gradient-to-r from-red-500 to-pink-500 text-white border-red-400/60 shadow-red-500/40'
                     }`}>
-                      <i className={`fas ${participant.status === 'active' ? 'fa-microphone' : 'fa-microphone-slash'} text-xs`}></i>
+                      <i className={`fas ${!isMuted && participant.status === 'active' ? 'fa-microphone' : 'fa-microphone-slash'} text-sm`}></i>
+                    </div>
+                    
+                    {/* Video Status Indicator with Realistic Behavior */}
+                    {isCameraOn ? (
+                      <div className="absolute bottom-3 right-3 p-2 rounded-full bg-gradient-to-r from-blue-500/80 to-cyan-500/80 text-white backdrop-blur-sm border border-blue-400/60 shadow-lg shadow-blue-500/30">
+                        <i className="fas fa-video text-xs"></i>
+                      </div>
+                    ) : (
+                      <div className="absolute bottom-3 right-3 p-2 rounded-full bg-gradient-to-r from-gray-500/80 to-gray-600/80 text-white backdrop-blur-sm border border-gray-400/60 shadow-lg shadow-gray-500/30">
+                        <i className="fas fa-video-slash text-xs"></i>
+                      </div>
+                    )}
+                    
+                    {/* Realistic Connection Quality Indicator */}
+                    <div className="absolute top-3 right-3 flex space-x-1">
+                      <div className={`w-1 h-3 rounded-full transition-all duration-300 ${
+                        connectionQuality === 'excellent' ? 'bg-green-400' :
+                        connectionQuality === 'good' ? 'bg-green-400' :
+                        connectionQuality === 'fair' ? 'bg-yellow-400' : 'bg-red-400'
+                      }`}></div>
+                      <div className={`w-1 h-4 rounded-full transition-all duration-300 ${
+                        connectionQuality === 'excellent' ? 'bg-green-400' :
+                        connectionQuality === 'good' ? 'bg-green-400' :
+                        connectionQuality === 'fair' ? 'bg-yellow-400' : 'bg-gray-400'
+                      }`}></div>
+                      <div className={`w-1 h-5 rounded-full transition-all duration-300 ${
+                        connectionQuality === 'excellent' ? 'bg-green-400' :
+                        connectionQuality === 'good' ? 'bg-yellow-400' :
+                        'bg-gray-400'
+                      }`}></div>
                     </div>
                   </div>
                 );
@@ -697,6 +886,19 @@ export default function MeetingInterface({ meeting, onLeave }: MeetingInterfaceP
                     className="w-12 h-12 bg-gradient-to-r from-blue-600/80 to-purple-600/60 hover:from-blue-500/80 hover:to-purple-500/60 text-white rounded-full transition-all duration-300 transform hover:scale-110 backdrop-blur-sm border border-blue-600/30 shadow-lg shadow-blue-600/20"
                   >
                     <i className="fas fa-share text-sm"></i>
+                  </Button>
+                </div>
+
+                <div className="relative group">
+                  <Button
+                    onClick={toggleVirtualControlPanel}
+                    className={`w-12 h-12 rounded-full transition-all duration-300 transform hover:scale-110 backdrop-blur-sm border shadow-lg ${
+                      showVirtualControlPanel 
+                        ? 'bg-gradient-to-r from-pink-600/80 to-purple-600/60 hover:from-pink-500/80 hover:to-purple-500/60 text-white border-pink-600/30 shadow-pink-600/20' 
+                        : 'bg-gradient-to-r from-slate-600/80 to-purple-600/60 hover:from-slate-500/80 hover:to-purple-500/60 text-white border-purple-600/30 shadow-purple-600/20'
+                    }`}
+                  >
+                    <i className="fas fa-robot text-sm"></i>
                   </Button>
                 </div>
 
@@ -882,6 +1084,56 @@ export default function MeetingInterface({ meeting, onLeave }: MeetingInterfaceP
             />
           </div>
         )}
+
+        {/* Virtual Participants Control Panel Sidebar */}
+        {showVirtualControlPanel && (
+          <div className="hidden md:block w-80 bg-gradient-to-br from-slate-900 via-purple-900/30 to-slate-900 border-l border-purple-700/40 overflow-y-auto">
+            <div className="p-4">
+              <VirtualParticipantsControlPanel
+                participants={participants}
+                onToggleParticipant={handleToggleVirtualParticipant}
+                onUpdateSettings={handleUpdateVirtualSettings}
+                onGenerateMessage={handleGenerateVirtualMessage}
+                onResetBehavior={handleResetVirtualBehavior}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Mobile Virtual Participants Control Panel Overlay */}
+        <div className={`md:hidden fixed inset-0 bg-black bg-opacity-50 z-40 transition-opacity duration-300 backdrop-blur-sm ${
+          showVirtualControlPanel ? 'opacity-100 visible' : 'opacity-0 invisible'
+        }`} onClick={toggleVirtualControlPanel}>
+          <div className={`absolute right-0 top-0 h-full w-80 max-w-[85vw] bg-gradient-to-br from-slate-900 via-purple-900/30 to-slate-900 backdrop-blur-lg shadow-2xl transform transition-transform duration-300 ${
+            showVirtualControlPanel ? 'translate-x-0' : 'translate-x-full'
+          }`} onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between p-4 border-b border-purple-200/30 bg-gradient-to-r from-purple-800/80 via-pink-800/50 to-purple-800/80 backdrop-blur-sm">
+              <div className="flex items-center">
+                <div className="w-8 h-8 bg-gradient-to-br from-purple-600 to-pink-600 rounded-lg flex items-center justify-center text-white mr-2 shadow-lg">
+                  <i className="fas fa-robot text-sm"></i>
+                </div>
+                <h3 className="font-bold bg-gradient-to-r from-white via-purple-200 to-pink-200 bg-clip-text text-transparent">المشاركون الافتراضيون</h3>
+              </div>
+              <Button 
+                onClick={toggleVirtualControlPanel}
+                variant="ghost" 
+                size="sm"
+                className="w-8 h-8 p-0 text-purple-300 hover:text-red-300 bg-gradient-to-r from-white/10 to-purple-100/20 hover:from-red-100/20 hover:to-red-200/20 rounded-full backdrop-blur-sm border border-purple-200/40 hover:border-red-300/40 transition-all duration-300"
+              >
+                <i className="fas fa-times"></i>
+              </Button>
+            </div>
+            <div className="h-full overflow-y-auto p-4">
+              <VirtualParticipantsControlPanel
+                participants={participants}
+                onToggleParticipant={handleToggleVirtualParticipant}
+                onUpdateSettings={handleUpdateVirtualSettings}
+                onGenerateMessage={handleGenerateVirtualMessage}
+                onResetBehavior={handleResetVirtualBehavior}
+              />
+            </div>
+          </div>
+        </div>
         
         {/* Mobile Chat Overlay */}
         <div className={`md:hidden fixed inset-0 bg-black bg-opacity-50 z-40 transition-opacity duration-300 ${
