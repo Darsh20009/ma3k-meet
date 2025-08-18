@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import MeetingInterface from "@/components/meeting-interface";
+import SimpleMeetingInterface from "@/components/simple-meeting-interface";
 import { useToast } from "@/hooks/use-toast";
 import type { Meeting } from "@shared/schema";
 
@@ -34,7 +34,7 @@ export default function JoinMeeting() {
     setHasJoined(true);
   };
 
-  const leaveMeeting = () => {
+  const handleLeaveMeeting = () => {
     setHasJoined(false);
     localStorage.removeItem('userName');
   };
@@ -87,7 +87,7 @@ export default function JoinMeeting() {
   }
 
   if (hasJoined) {
-    return <MeetingInterface meeting={meeting} onLeave={leaveMeeting} />;
+    return <SimpleMeetingInterface meeting={meeting} onLeave={handleLeaveMeeting} />;
   }
 
   return (

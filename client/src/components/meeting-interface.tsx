@@ -6,10 +6,10 @@ import ParticipantManagement from "./participant-management";
 import ChatSidebar from "./chat-sidebar";
 import MeetingCodeDisplay from "./meeting-code-display";
 import QuickReactions from "./quick-reactions";
-import VirtualParticipantsControlPanel, { VirtualParticipantSettings } from "./virtual-participants-control-panel";
+// Removed complex virtual participants control panel
 import { useWebSocket } from "@/hooks/use-websocket";
 import type { Meeting, VirtualParticipant } from "@shared/schema";
-import { RealisticBehaviorSimulator, VirtualParticipantMessageGenerator } from "@/lib/realistic-behavior";
+// Simplified virtual participants
 
 interface MeetingInterfaceProps {
   meeting: Meeting;
@@ -37,11 +37,7 @@ export default function MeetingInterface({ meeting, onLeave }: MeetingInterfaceP
   // Session users tracking for real-time collaboration
   const [sessionUsers, setSessionUsers] = useState<{id: string, name: string, joinedAt: Date}[]>([]);
   
-  // Realistic behavior simulation
-  const [behaviorSimulator, setBehaviorSimulator] = useState<RealisticBehaviorSimulator | null>(null);
-  const [messageGenerator, setMessageGenerator] = useState<VirtualParticipantMessageGenerator | null>(null);
-  const [showVirtualControlPanel, setShowVirtualControlPanel] = useState(false);
-  const [virtualSettings, setVirtualSettings] = useState<VirtualParticipantSettings | null>(null);
+  // Simplified virtual participants - just basic behavior
 
   // Meeting timer
   useEffect(() => {
@@ -274,7 +270,6 @@ export default function MeetingInterface({ meeting, onLeave }: MeetingInterfaceP
   const toggleParticipants = () => setShowParticipants(!showParticipants);
   const toggleChat = () => setShowChat(!showChat);
   const toggleControlsPanel = () => setShowControls(!showControls);
-  const toggleVirtualControlPanel = () => setShowVirtualControlPanel(!showVirtualControlPanel);
 
   const toggleFullscreen = async () => {
     if (!document.fullscreenElement) {
@@ -325,71 +320,28 @@ export default function MeetingInterface({ meeting, onLeave }: MeetingInterfaceP
     setShowShareDialog(true);
   };
 
-  // Virtual participants control functions
-  const handleToggleVirtualParticipant = async (participantId: string, isActive: boolean) => {
-    try {
-      const response = await fetch(`/api/meetings/${meeting.id}/participants/${participantId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: isActive ? 'active' : 'away' })
-      });
-      
-      if (response.ok) {
-        toast({
-          title: "تم تحديث المشارك",
-          description: `تم ${isActive ? 'تفعيل' : 'إيقاف'} المشارك بنجاح`,
-        });
-      }
-    } catch (error) {
-      console.error('Error toggling participant:', error);
-    }
-  };
+  // Simple auto-messaging for virtual participants  
+  useEffect(() => {
+    if (participants.length > 0) {
+      const interval = setInterval(() => {
+        const activeParticipants = participants.filter(p => p.status === 'active');
+        if (activeParticipants.length > 0 && Math.random() < 0.3) {
+          const randomParticipant = activeParticipants[Math.floor(Math.random() * activeParticipants.length)];
+          const messages = [
+            'مرحباً بالجميع',
+            'أتفق مع هذا الاقتراح',
+            'هل يمكننا مناقشة هذه النقطة؟',
+            'شكراً للإيضاح',
+            'فكرة رائعة!'
+          ];
+          const randomMessage = messages[Math.floor(Math.random() * messages.length)];
+          sendMessage(randomMessage, randomParticipant.name, randomParticipant.avatar);
+        }
+      }, 15000); // كل 15 ثانية
 
-  const handleUpdateVirtualSettings = (settings: VirtualParticipantSettings) => {
-    setVirtualSettings(settings);
-    if (behaviorSimulator && settings.realisticBehavior) {
-      console.log('Updating virtual participant settings:', settings);
+      return () => clearInterval(interval);
     }
-  };
-
-  const handleGenerateVirtualMessage = (participantId: string) => {
-    if (messageGenerator) {
-      const participant = participants.find(p => p.id === participantId);
-      if (participant) {
-        const personalityMessages = {
-          professional: ['أقترح مراجعة هذه النقطة بتفصيل أكثر', 'من وجهة نظر مهنية، هذا الاقتراح ممتاز'],
-          creative: ['لدي فكرة إبداعية حول هذا الموضوع! 🎨', 'ما رأيكم لو أضفنا لمسة مبتكرة؟'],
-          technical: ['تقنياً، يمكننا تحسين هذا الحل', 'نحتاج لمراجعة الأداء والـ scalability'],
-          manager: ['دعونا نحدد الأولويات والجدول الزمني', 'ما هي المخاطر المحتملة؟'],
-          friendly: ['أحب هذا التوجه! 😊', 'شكراً لكم على هذا الطرح المفيد']
-        };
-        
-        const messages = personalityMessages[participant.personality as keyof typeof personalityMessages] || personalityMessages.friendly;
-        const randomMessage = messages[Math.floor(Math.random() * messages.length)];
-        
-        sendMessage(randomMessage, participant.name, participant.avatar);
-        
-        toast({
-          title: "تم إرسال رسالة",
-          description: `أرسل ${participant.name} رسالة جديدة`,
-        });
-      }
-    }
-  };
-
-  const handleResetVirtualBehavior = () => {
-    if (behaviorSimulator) {
-      behaviorSimulator.destroy();
-      
-      const newSimulator = new RealisticBehaviorSimulator(participants);
-      setBehaviorSimulator(newSimulator);
-      
-      toast({
-        title: "تم إعادة تعيين السلوك",
-        description: "تم إعادة تعيين سلوك المشاركين الافتراضيين",
-      });
-    }
-  };
+  }, [participants]);
 
   // Listen for fullscreen changes
   useEffect(() => {
@@ -889,18 +841,7 @@ export default function MeetingInterface({ meeting, onLeave }: MeetingInterfaceP
                   </Button>
                 </div>
 
-                <div className="relative group">
-                  <Button
-                    onClick={toggleVirtualControlPanel}
-                    className={`w-12 h-12 rounded-full transition-all duration-300 transform hover:scale-110 backdrop-blur-sm border shadow-lg ${
-                      showVirtualControlPanel 
-                        ? 'bg-gradient-to-r from-pink-600/80 to-purple-600/60 hover:from-pink-500/80 hover:to-purple-500/60 text-white border-pink-600/30 shadow-pink-600/20' 
-                        : 'bg-gradient-to-r from-slate-600/80 to-purple-600/60 hover:from-slate-500/80 hover:to-purple-500/60 text-white border-purple-600/30 shadow-purple-600/20'
-                    }`}
-                  >
-                    <i className="fas fa-robot text-sm"></i>
-                  </Button>
-                </div>
+
 
                 <div className="relative group">
                   <Button
@@ -1085,55 +1026,7 @@ export default function MeetingInterface({ meeting, onLeave }: MeetingInterfaceP
           </div>
         )}
 
-        {/* Virtual Participants Control Panel Sidebar */}
-        {showVirtualControlPanel && (
-          <div className="hidden md:block w-80 bg-gradient-to-br from-slate-900 via-purple-900/30 to-slate-900 border-l border-purple-700/40 overflow-y-auto">
-            <div className="p-4">
-              <VirtualParticipantsControlPanel
-                participants={participants}
-                onToggleParticipant={handleToggleVirtualParticipant}
-                onUpdateSettings={handleUpdateVirtualSettings}
-                onGenerateMessage={handleGenerateVirtualMessage}
-                onResetBehavior={handleResetVirtualBehavior}
-              />
-            </div>
-          </div>
-        )}
-
-        {/* Mobile Virtual Participants Control Panel Overlay */}
-        <div className={`md:hidden fixed inset-0 bg-black bg-opacity-50 z-40 transition-opacity duration-300 backdrop-blur-sm ${
-          showVirtualControlPanel ? 'opacity-100 visible' : 'opacity-0 invisible'
-        }`} onClick={toggleVirtualControlPanel}>
-          <div className={`absolute right-0 top-0 h-full w-80 max-w-[85vw] bg-gradient-to-br from-slate-900 via-purple-900/30 to-slate-900 backdrop-blur-lg shadow-2xl transform transition-transform duration-300 ${
-            showVirtualControlPanel ? 'translate-x-0' : 'translate-x-full'
-          }`} onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between p-4 border-b border-purple-200/30 bg-gradient-to-r from-purple-800/80 via-pink-800/50 to-purple-800/80 backdrop-blur-sm">
-              <div className="flex items-center">
-                <div className="w-8 h-8 bg-gradient-to-br from-purple-600 to-pink-600 rounded-lg flex items-center justify-center text-white mr-2 shadow-lg">
-                  <i className="fas fa-robot text-sm"></i>
-                </div>
-                <h3 className="font-bold bg-gradient-to-r from-white via-purple-200 to-pink-200 bg-clip-text text-transparent">المشاركون الافتراضيون</h3>
-              </div>
-              <Button 
-                onClick={toggleVirtualControlPanel}
-                variant="ghost" 
-                size="sm"
-                className="w-8 h-8 p-0 text-purple-300 hover:text-red-300 bg-gradient-to-r from-white/10 to-purple-100/20 hover:from-red-100/20 hover:to-red-200/20 rounded-full backdrop-blur-sm border border-purple-200/40 hover:border-red-300/40 transition-all duration-300"
-              >
-                <i className="fas fa-times"></i>
-              </Button>
-            </div>
-            <div className="h-full overflow-y-auto p-4">
-              <VirtualParticipantsControlPanel
-                participants={participants}
-                onToggleParticipant={handleToggleVirtualParticipant}
-                onUpdateSettings={handleUpdateVirtualSettings}
-                onGenerateMessage={handleGenerateVirtualMessage}
-                onResetBehavior={handleResetVirtualBehavior}
-              />
-            </div>
-          </div>
-        </div>
+        {/* تم إزالة لوحة التحكم المعقدة للمشاركين الافتراضيين */}
         
         {/* Mobile Chat Overlay */}
         <div className={`md:hidden fixed inset-0 bg-black bg-opacity-50 z-40 transition-opacity duration-300 ${

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
-import MeetingInterface from "@/components/meeting-interface";
+import SimpleMeetingInterface from "@/components/simple-meeting-interface";
 import EnhancedChat from "@/components/enhanced-chat";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -57,7 +57,7 @@ export default function Home() {
   };
 
   if (currentMeeting) {
-    return <MeetingInterface meeting={currentMeeting} onLeave={leaveMeeting} />;
+    return <SimpleMeetingInterface meeting={currentMeeting} onLeave={leaveMeeting} />;
   }
 
   if (showQuickChat) {

@@ -156,6 +156,31 @@
         "reactionAnimations": true
       },
       "createdAt": "2025-08-18T09:06:14.280Z"
+    },
+    {
+      "id": "2f7af284-213a-40dd-9073-61fc6da4fd11",
+      "name": "jnh",
+      "type": "اجتماع عمل",
+      "meetingCode": "324044",
+      "hostId": "anonymous-host",
+      "password": null,
+      "isPasswordProtected": false,
+      "maxParticipants": 100,
+      "waitingRoom": false,
+      "recordMeeting": false,
+      "allowScreenShare": true,
+      "allowChat": true,
+      "muteOnJoin": false,
+      "isActive": true,
+      "settings": {
+        "messageSpeed": "medium",
+        "conversationType": "friendly",
+        "autoSounds": false,
+        "virtualParticipantsEnabled": true,
+        "backgroundEffects": true,
+        "reactionAnimations": true
+      },
+      "createdAt": "2025-08-18T09:21:41.194Z"
     }
   ],
   "participants": [
@@ -198,6 +223,46 @@
       "avatar": "👩‍💻",
       "status": "active",
       "personality": "friendly"
+    },
+    {
+      "id": "661b01c8-d3de-41a0-925b-30b88235d938",
+      "meetingId": "2f7af284-213a-40dd-9073-61fc6da4fd11",
+      "name": "أحمد المهندس",
+      "avatar": "👨‍💼",
+      "status": "active",
+      "personality": "professional"
+    },
+    {
+      "id": "8885597d-b0d6-43b0-be08-4bb3b60d191c",
+      "meetingId": "2f7af284-213a-40dd-9073-61fc6da4fd11",
+      "name": "فاطمة المصممة",
+      "avatar": "👩‍🎨",
+      "status": "active",
+      "personality": "creative"
+    },
+    {
+      "id": "6f214edd-01ec-484b-af29-c22132b6d6a0",
+      "meetingId": "2f7af284-213a-40dd-9073-61fc6da4fd11",
+      "name": "محمد المطور",
+      "avatar": "👨‍💻",
+      "status": "active",
+      "personality": "technical"
+    },
+    {
+      "id": "f2bd60fc-dd53-48ea-8dd4-899601b949e7",
+      "meetingId": "2f7af284-213a-40dd-9073-61fc6da4fd11",
+      "name": "نور المديرة",
+      "avatar": "👩‍💼",
+      "status": "active",
+      "personality": "manager"
+    },
+    {
+      "id": "17930857-ca1f-4e2c-aedd-cb1193de8c82",
+      "meetingId": "2f7af284-213a-40dd-9073-61fc6da4fd11",
+      "name": "سارة المسوقة",
+      "avatar": "👩‍💻",
+      "status": "active",
+      "personality": "friendly"
     }
   ],
   "realUsers": [],
@@ -209,6 +274,7 @@
     "6fb2bb89-f11f-439b-9d51-f8942e480844": {},
     "6ce0aa79-5574-442c-b3ef-e022f5e3df33": {},
     "4bd45567-4a0b-4f52-8d21-8f423740ad8a": {},
-    "699acba2-9b69-4a54-b3f7-b01c82e0300f": {}
+    "699acba2-9b69-4a54-b3f7-b01c82e0300f": {},
+    "2f7af284-213a-40dd-9073-61fc6da4fd11": {}
   }
 }
