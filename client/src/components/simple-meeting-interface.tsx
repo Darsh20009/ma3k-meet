@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
 import ParticipantManagement from "./participant-management";
 import ChatSidebar from "./chat-sidebar";
 import MeetingCodeDisplay from "./meeting-code-display";
@@ -16,6 +17,7 @@ interface SimpleMeetingInterfaceProps {
 export default function SimpleMeetingInterface({ meeting, onLeave }: SimpleMeetingInterfaceProps) {
   const { toast } = useToast();
   const meetingContainerRef = useRef<HTMLDivElement>(null);
+  const queryClient = useQueryClient();
   
   // Basic meeting controls
   const [isMicOn, setIsMicOn] = useState(true);
@@ -26,6 +28,7 @@ export default function SimpleMeetingInterface({ meeting, onLeave }: SimpleMeeti
   // UI states
   const [showParticipants, setShowParticipants] = useState(false);
   const [showChat, setShowChat] = useState(false);
+  const [showAddParticipant, setShowAddParticipant] = useState(false);
   const [messages, setMessages] = useState<any[]>([]);
   
   // Session users tracking
@@ -151,6 +154,60 @@ export default function SimpleMeetingInterface({ meeting, onLeave }: SimpleMeeti
   };
 
   const userName = localStorage.getItem('userName') || 'مستخدم';
+
+  // Add participant mutation
+  const addParticipantMutation = useMutation({
+    mutationFn: async (participantData: { name: string; role: string; status: 'active' | 'away' | 'offline' }) => {
+      const response = await fetch(`/api/meetings/${meeting.id}/participants`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          name: participantData.name,
+          role: participantData.role,
+          status: participantData.status,
+          avatar: '👤'
+        })
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to add participant');
+      }
+      
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ['/api/meetings', meeting.id, 'participants']
+      });
+      setShowAddParticipant(false);
+      toast({
+        title: "تم إضافة المشارك",
+        description: "تم إضافة المشارك الافتراضي بنجاح"
+      });
+    },
+    onError: () => {
+      toast({
+        title: "خطأ",
+        description: "فشل في إضافة المشارك",
+        variant: "destructive"
+      });
+    }
+  });
+
+  // Handle add participant form
+  const handleAddParticipant = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const name = formData.get('name') as string;
+    const role = formData.get('role') as string;
+    const status = formData.get('status') as 'active' | 'away' | 'offline';
+    
+    if (name && role && status) {
+      addParticipantMutation.mutate({ name, role, status });
+    }
+  };
 
   return (
     <div ref={meetingContainerRef} className="h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white flex flex-col">
@@ -403,9 +460,19 @@ export default function SimpleMeetingInterface({ meeting, onLeave }: SimpleMeeti
               {/* Virtual Participants Section */}
               {participants.length > 0 && (
                 <div>
-                  <div className="flex items-center gap-2 mb-3">
-                    <div className="w-3 h-3 bg-purple-400 rounded-full"></div>
-                    <h4 className="text-sm font-semibold text-purple-400">المشاركون الافتراضيون ({participants.length})</h4>
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 bg-purple-400 rounded-full"></div>
+                      <h4 className="text-sm font-semibold text-purple-400">المشاركون الافتراضيون ({participants.length})</h4>
+                    </div>
+                    <Button
+                      onClick={() => setShowAddParticipant(true)}
+                      size="sm"
+                      className="bg-purple-600/20 hover:bg-purple-600/30 text-purple-300 border border-purple-600/40 h-8 px-3 text-xs"
+                    >
+                      <i className="fas fa-plus ml-1"></i>
+                      إضافة
+                    </Button>
                   </div>
                   {participants.map((participant, index) => {
                     const avatarEmojis = ['👨‍💼', '👩‍💻', '👨‍🎨', '👩‍🔬', '👨‍🏫', '👩‍⚕️', '👨‍🚀', '👩‍🎓'];
@@ -435,6 +502,155 @@ export default function SimpleMeetingInterface({ meeting, onLeave }: SimpleMeeti
                   })}
                 </div>
               )}
+              
+              {/* Empty state for virtual participants */}
+              {participants.length === 0 && (
+                <div className="text-center py-8">
+                  <div className="text-gray-500 mb-4">
+                    <i className="fas fa-users text-4xl opacity-50 mb-3"></i>
+                    <p className="text-sm">لا يوجد مشاركون افتراضيون</p>
+                  </div>
+                  <Button
+                    onClick={() => setShowAddParticipant(true)}
+                    className="bg-purple-600 hover:bg-purple-700 text-white"
+                  >
+                    <i className="fas fa-plus ml-2"></i>
+                    إضافة أول مشارك
+                  </Button>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Add Participant Modal */}
+        {showAddParticipant && (
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl border border-gray-600/50 shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+              {/* Modal Header */}
+              <div className="p-6 border-b border-gray-600/50 bg-gradient-to-r from-purple-600/10 to-pink-600/10">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
+                      <i className="fas fa-user-plus text-white"></i>
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-semibold text-white">إضافة مشارك افتراضي</h3>
+                      <p className="text-xs text-gray-400">أضف مشارك جديد إلى الاجتماع</p>
+                    </div>
+                  </div>
+                  <Button
+                    onClick={() => setShowAddParticipant(false)}
+                    variant="ghost"
+                    size="sm"
+                    className="text-gray-400 hover:text-white hover:bg-gray-700/50"
+                  >
+                    <i className="fas fa-times"></i>
+                  </Button>
+                </div>
+              </div>
+
+              {/* Modal Content */}
+              <div className="p-6">
+                <form onSubmit={handleAddParticipant} className="space-y-6">
+                  {/* Name Field */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      اسم المشارك
+                    </label>
+                    <input
+                      type="text"
+                      name="name"
+                      placeholder="أدخل اسم المشارك"
+                      required
+                      className="w-full bg-gray-700/80 text-white rounded-xl px-4 py-3 border border-gray-600/50 focus:border-purple-500/50 focus:outline-none focus:ring-2 focus:ring-purple-500/20 transition-all duration-300"
+                    />
+                  </div>
+
+                  {/* Role Selection */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      الوظيفة
+                    </label>
+                    <select
+                      name="role"
+                      required
+                      className="w-full bg-gray-700/80 text-white rounded-xl px-4 py-3 border border-gray-600/50 focus:border-purple-500/50 focus:outline-none focus:ring-2 focus:ring-purple-500/20 transition-all duration-300"
+                    >
+                      <option value="">اختر الوظيفة</option>
+                      <option value="مهندس">مهندس</option>
+                      <option value="مصمم">مصمم</option>
+                      <option value="مطور">مطور</option>
+                      <option value="مدير">مدير</option>
+                      <option value="مسوق">مسوق</option>
+                      <option value="محاسب">محاسب</option>
+                      <option value="باحث">باحث</option>
+                      <option value="مستشار">مستشار</option>
+                      <option value="طالب">طالب</option>
+                      <option value="معلم">معلم</option>
+                    </select>
+                  </div>
+
+                  {/* Status Selection */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      الحالة
+                    </label>
+                    <div className="grid grid-cols-3 gap-3">
+                      <label className="flex items-center gap-2 p-3 bg-gray-700/50 rounded-xl border border-gray-600/30 cursor-pointer hover:bg-green-600/10 hover:border-green-600/50 transition-all duration-300">
+                        <input type="radio" name="status" value="active" defaultChecked className="text-green-500" />
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+                          <span className="text-sm text-green-400">نشط</span>
+                        </div>
+                      </label>
+                      <label className="flex items-center gap-2 p-3 bg-gray-700/50 rounded-xl border border-gray-600/30 cursor-pointer hover:bg-yellow-600/10 hover:border-yellow-600/50 transition-all duration-300">
+                        <input type="radio" name="status" value="away" className="text-yellow-500" />
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 bg-yellow-400 rounded-full"></div>
+                          <span className="text-sm text-yellow-400">غائب</span>
+                        </div>
+                      </label>
+                      <label className="flex items-center gap-2 p-3 bg-gray-700/50 rounded-xl border border-gray-600/30 cursor-pointer hover:bg-gray-600/20 hover:border-gray-600/70 transition-all duration-300">
+                        <input type="radio" name="status" value="offline" className="text-gray-400" />
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
+                          <span className="text-sm text-gray-400">غير متصل</span>
+                        </div>
+                      </label>
+                    </div>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="flex gap-3 pt-4">
+                    <Button
+                      type="button"
+                      onClick={() => setShowAddParticipant(false)}
+                      variant="outline"
+                      className="flex-1 border-gray-600 text-gray-300 hover:bg-gray-700/50"
+                    >
+                      إلغاء
+                    </Button>
+                    <Button
+                      type="submit"
+                      disabled={addParticipantMutation.isPending}
+                      className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white"
+                    >
+                      {addParticipantMutation.isPending ? (
+                        <>
+                          <i className="fas fa-spinner fa-spin ml-2"></i>
+                          جاري الإضافة...
+                        </>
+                      ) : (
+                        <>
+                          <i className="fas fa-plus ml-2"></i>
+                          إضافة المشارك
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </form>
+              </div>
             </div>
           </div>
         )}
