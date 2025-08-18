@@ -181,6 +181,56 @@
         "reactionAnimations": true
       },
       "createdAt": "2025-08-18T09:21:41.194Z"
+    },
+    {
+      "id": "c58b841f-b5f9-49b0-8209-06c852c882b9",
+      "name": "zx",
+      "type": "اجتماع عمل",
+      "meetingCode": "260810",
+      "hostId": "anonymous-host",
+      "password": null,
+      "isPasswordProtected": false,
+      "maxParticipants": 100,
+      "waitingRoom": false,
+      "recordMeeting": false,
+      "allowScreenShare": true,
+      "allowChat": true,
+      "muteOnJoin": false,
+      "isActive": true,
+      "settings": {
+        "messageSpeed": "medium",
+        "conversationType": "friendly",
+        "autoSounds": false,
+        "virtualParticipantsEnabled": true,
+        "backgroundEffects": true,
+        "reactionAnimations": true
+      },
+      "createdAt": "2025-08-18T10:34:29.394Z"
+    },
+    {
+      "id": "f4134340-4a89-46c8-bcec-1340c47ba843",
+      "name": "يبص",
+      "type": "اجتماع عمل",
+      "meetingCode": "816679",
+      "hostId": "anonymous-host",
+      "password": null,
+      "isPasswordProtected": false,
+      "maxParticipants": 100,
+      "waitingRoom": false,
+      "recordMeeting": false,
+      "allowScreenShare": true,
+      "allowChat": true,
+      "muteOnJoin": false,
+      "isActive": true,
+      "settings": {
+        "messageSpeed": "medium",
+        "conversationType": "friendly",
+        "autoSounds": false,
+        "virtualParticipantsEnabled": true,
+        "backgroundEffects": true,
+        "reactionAnimations": true
+      },
+      "createdAt": "2025-08-18T10:40:50.084Z"
     }
   ],
   "participants": [
@@ -263,6 +313,78 @@
       "avatar": "👩‍💻",
       "status": "active",
       "personality": "friendly"
+    },
+    {
+      "id": "c1f28008-79ee-4d8c-9e88-789020686521",
+      "meetingId": "c58b841f-b5f9-49b0-8209-06c852c882b9",
+      "name": "فاطمة المصممة",
+      "avatar": "👩‍🎨",
+      "status": "active",
+      "personality": "creative"
+    },
+    {
+      "id": "022953a4-293e-4842-82c9-05500ab2646d",
+      "meetingId": "c58b841f-b5f9-49b0-8209-06c852c882b9",
+      "name": "محمد المطور",
+      "avatar": "👨‍💻",
+      "status": "active",
+      "personality": "technical"
+    },
+    {
+      "id": "533b2028-f15e-4823-b362-28967d03ebd5",
+      "meetingId": "c58b841f-b5f9-49b0-8209-06c852c882b9",
+      "name": "نور المديرة",
+      "avatar": "👩‍💼",
+      "status": "active",
+      "personality": "manager"
+    },
+    {
+      "id": "5e9466d6-9161-424a-ad9d-e81b16622a2d",
+      "meetingId": "c58b841f-b5f9-49b0-8209-06c852c882b9",
+      "name": "سارة المسوقة",
+      "avatar": "👩‍💻",
+      "status": "active",
+      "personality": "friendly"
+    },
+    {
+      "id": "d6429702-35d7-4249-9e6c-3e51695fc01c",
+      "meetingId": "f4134340-4a89-46c8-bcec-1340c47ba843",
+      "name": "أحمد المهندس",
+      "avatar": "👨‍💼",
+      "status": "active",
+      "personality": "professional"
+    },
+    {
+      "id": "05cab71b-30ba-47bd-a9e7-68ee1a518241",
+      "meetingId": "f4134340-4a89-46c8-bcec-1340c47ba843",
+      "name": "فاطمة المصممة",
+      "avatar": "👩‍🎨",
+      "status": "active",
+      "personality": "creative"
+    },
+    {
+      "id": "7849197b-b7bd-46ce-8bf2-b2cb92c6b143",
+      "meetingId": "f4134340-4a89-46c8-bcec-1340c47ba843",
+      "name": "محمد المطور",
+      "avatar": "👨‍💻",
+      "status": "active",
+      "personality": "technical"
+    },
+    {
+      "id": "db12d6d8-f927-479c-b704-81292fa9634c",
+      "meetingId": "f4134340-4a89-46c8-bcec-1340c47ba843",
+      "name": "نور المديرة",
+      "avatar": "👩‍💼",
+      "status": "active",
+      "personality": "manager"
+    },
+    {
+      "id": "d3d00bf1-2e2c-4f7e-8a7d-092cdc4f4167",
+      "meetingId": "f4134340-4a89-46c8-bcec-1340c47ba843",
+      "name": "سارة المسوقة",
+      "avatar": "👩‍💻",
+      "status": "active",
+      "personality": "friendly"
     }
   ],
   "realUsers": [],
@@ -275,6 +397,8 @@
     "6ce0aa79-5574-442c-b3ef-e022f5e3df33": {},
     "4bd45567-4a0b-4f52-8d21-8f423740ad8a": {},
     "699acba2-9b69-4a54-b3f7-b01c82e0300f": {},
-    "2f7af284-213a-40dd-9073-61fc6da4fd11": {}
+    "2f7af284-213a-40dd-9073-61fc6da4fd11": {},
+    "c58b841f-b5f9-49b0-8209-06c852c882b9": {},
+    "f4134340-4a89-46c8-bcec-1340c47ba843": {}
   }
 }
