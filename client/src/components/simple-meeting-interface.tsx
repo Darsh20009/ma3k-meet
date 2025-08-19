@@ -158,21 +158,23 @@ export default function SimpleMeetingInterface({ meeting, onLeave }: SimpleMeeti
   // Add participant mutation
   const addParticipantMutation = useMutation({
     mutationFn: async (participantData: { name: string; role: string; status: 'active' | 'away' | 'offline' }) => {
-      const response = await fetch(`/api/meetings/${meeting.id}/participants`, {
+      const response = await fetch(`/api/participants`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
+          meetingId: meeting.id,
           name: participantData.name,
-          role: participantData.role,
+          avatar: '👤',
           status: participantData.status,
-          avatar: '👤'
+          personality: 'professional'
         })
       });
       
       if (!response.ok) {
-        throw new Error('Failed to add participant');
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to add participant');
       }
       
       return response.json();
